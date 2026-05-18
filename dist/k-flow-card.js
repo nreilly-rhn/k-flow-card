@@ -1,8 +1,7 @@
 // k-flow-card.js – Unified Edition v7.1.1
 // Fixes:
-//   - Inverter name, system limits, EV battery capacity now use
+//   - Inverter name and system limits now use
 //     explicit <ha-textfield> inputs (impossible to miss).
-//   - PV3 & PV4 merged under one toggle "Extra PV Strings".
 //   - Battery current & power moved outside battery icon:
 //     power above flow‑bar, current below.
 //   - Sun always stays on the arc.
@@ -55,7 +54,7 @@ class KFlowCardEditor extends HTMLElement {
     if (this._config[key] === value) return;
     this._config = { ...this._config, [key]: value };
     this._fireChanged();
-    if (key === '_show_battery' || key === '_show_pv_extra' || key === '_show_ev' || key === '_show_limits' || key === '_labels_custom_entities')
+    if (key === '_show_battery' || key === '_show_limits' || key === '_labels_custom_entities')
       this._render();
   }
 
@@ -64,8 +63,6 @@ class KFlowCardEditor extends HTMLElement {
     if (!this._sectionOpen) this._sectionOpen = {};
     const cfg = this._config;
     const showBatt1 = !!(cfg._show_battery !== false);
-    const showPVExtra = !!(cfg._show_pv_extra);
-    const showEV = !!(cfg._show_ev);
     const showLimits = !!(cfg._show_limits);
 
     const style = `
@@ -460,11 +457,6 @@ class KFlowCardEditor extends HTMLElement {
       picker('pv2_power', 'PV2 Power'),
     ]));
 
-    shell.appendChild(makeSection('solar_extra', '☀️', 'Extra PV Strings', [
-      picker('pv3_power', 'PV3 Power', true),
-      picker('pv4_power', 'PV4 Power', true),
-    ], { toggleKey: '_show_pv_extra', toggleOn: showPVExtra, hidden: !showPVExtra }));
-
     shell.appendChild(makeSection('solar_extras', '☀️', 'Solar Extras', [
       picker('pv_total_power',  'Total PV Power',  true),
       divider(),
@@ -509,15 +501,6 @@ class KFlowCardEditor extends HTMLElement {
       numberField('pv_max_power',       'PV Max Power',      1000,30000,100, 'W'),
     ], { toggleKey: '_show_limits', toggleOn: showLimits, hidden: !showLimits }));
 
-    shell.appendChild(makeSection('ev', '🚗', 'EV / Car Charger', [
-      picker('charger_state',           'Charger State'),
-      picker('charger_power',           'Charger Power'),
-      picker('charger_current',         'Charger Current'),
-      picker('charger_soc',             'Car Battery SOC'),
-      picker('charger_eta',             'Charge ETA (min)', true),
-      numberField('charger_battery_capacity_wh', 'EV Battery Capacity', 0, 200000, 1, 'Wh'),
-    ], { toggleKey: '_show_ev', toggleOn: showEV, hidden: !showEV }));
-
     this.innerHTML = '';
     this.appendChild(shell);
     this._rendered = true;
@@ -542,8 +525,6 @@ class KFlowCard extends HTMLElement {
     return {
       pv1_power: 'sensor.goodwe_pv1_power',
       pv2_power: 'sensor.goodwe_pv2_power',
-      pv3_power: '',
-      pv4_power: '',
       pv_total_power: 'sensor.goodwe_pv_power',
       grid_active_power: 'sensor.goodwe_active_power',
       grid_import_energy: 'sensor.goodwe_today_energy_import',
@@ -569,12 +550,6 @@ class KFlowCard extends HTMLElement {
       battery_full_wh: 16076,
       inverter_max_power: 6000,
       pv_max_power: 7500,
-      charger_state: '',
-      charger_current: '',
-      charger_power: '',
-      charger_soc: '',
-      charger_eta: '',
-      charger_battery_capacity_wh: '',
       sun: 'sun.sun',
       inverter_name: '',
       label_cell_temp_minmax: 'CELL TEMP MIN/MAX',
@@ -596,8 +571,6 @@ class KFlowCard extends HTMLElement {
       _show_battery: true,
       invert_battery_power: false,
       invert_grid_power: false,
-      _show_pv_extra: false,   // combined toggle
-      _show_ev: false,
       _show_limits: false,
     };
   }
@@ -610,19 +583,16 @@ class KFlowCard extends HTMLElement {
     this._buildStaticSVG();
   }
 
-  set hass(hass) { this._hass = hass; this._updateDynamic(); }
+  set hass(hass) {
+    this._hass = hass;
+    this._updateDynamic();
+  }
 
   _val(eid) {
     if (!eid) return null;
     const s = this._hass?.states?.[eid];
     if (!s || s.state === 'unavailable' || s.state === 'unknown') return null;
     return parseFloat(s.state);
-  }
-
-  _strVal(eid) {
-    if (!eid) return '';
-    const s = this._hass?.states?.[eid];
-    return s ? String(s.state).toLowerCase() : '';
   }
 
   _socColor(p) { return p<=25?'#f85149':p<=50?'#f39c4b':p<=75?'#58a6ff':'#4CAF50'; }
@@ -678,26 +648,7 @@ class KFlowCard extends HTMLElement {
 
   _buildStaticSVG() {
     const showBatt1 = !!(this.config._show_battery !== false);
-    const ev   = !!(this.config._show_ev);
-    const showPvExtra = !!(this.config._show_pv_extra);
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
-
-    const pv3txt = showPvExtra ? `<text id="pv3label" x="8" y="424" font-size="9" fill="#8b949e" letter-spacing="1">PV3</text><text id="pv3FlowVal" x="8" y="438" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>` : '';
-    const pv4txt = showPvExtra ? `<text id="pv4label" x="8" y="456" font-size="9" fill="#8b949e" letter-spacing="1">PV4</text><text id="pv4FlowVal" x="8" y="470" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>` : '';
-
-    // EV placement inline with home and grid
-    const evX = 462 - 39.5;   // centre of grid icon
-    const evY = 397 - 39.5;   // centre of home icon
-    const evtxt = ev ? `<g id="evGroup">
-      <path id="flowHomeEV" d="M 317,397 H ${evX}" fill="none" stroke="#2b59ff" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 6" opacity="0">
-        <animate attributeName="stroke-dashoffset" from="-14" to="0" dur="0.8s" repeatCount="indefinite"/>
-      </path>
-      <image id="evIconImg" href="${iconPath}/ev-charger-icon.png" x="${evX}" y="${evY}" width="79" height="79" preserveAspectRatio="xMidYMid meet"/>
-      <text id="evPowerVal" x="${evX+39.5}" y="${evY+98}" text-anchor="middle" font-size="10" font-weight="600" fill="#29c4f6">-- W</text>
-      <text id="evCurrentVal" x="${evX+39.5}" y="${evY+110}" text-anchor="middle" font-size="9" fill="#cde">-- A</text>
-      <text id="evSocVal" x="${evX+39.5}" y="${evY+122}" text-anchor="middle" font-size="9" fill="#fff">-- %</text>
-      <text id="evEtaVal" x="${evX+39.5}" y="${evY+134}" text-anchor="middle" font-size="10" font-weight="600" fill="#4ade80">--</text>
-    </g>` : '';
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
     const battText = `
@@ -710,7 +661,7 @@ class KFlowCard extends HTMLElement {
 
     const batteryTip = `<rect x="75" y="126" width="18" height="4" rx="2" fill="url(#battCapGrad)"/>`;
 
-    // Battery visibility helpers – mirror EV charger pattern
+    // Battery visibility helpers
     const battGhostPath = showBatt1
       ? `<path d="M 59,175 H 132 V 205 H 205" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`
       : '';
@@ -874,10 +825,8 @@ class KFlowCard extends HTMLElement {
 
     const pv1 = this._val(this.config.pv1_power) || 0;
     const pv2 = this._val(this.config.pv2_power) || 0;
-    const pv3 = this.config._show_pv_extra ? (this._val(this.config.pv3_power) || 0) : 0;
-    const pv4 = this.config._show_pv_extra ? (this._val(this.config.pv4_power) || 0) : 0;
     const totalPvSensor = this._val(this.config.pv_total_power);
-    const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1 + pv2 + pv3 + pv4;
+    const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1 + pv2;
     const _gridPrimary = this._val(this.config.grid_active_power);
     let gridActive = _gridPrimary !== null ? _gridPrimary : (this._val(this.config.grid_power_alt) ?? 0);
     if (this.config.invert_grid_power) gridActive = -gridActive;
@@ -908,13 +857,6 @@ class KFlowCard extends HTMLElement {
     const pvMax = Number(this.config.pv_max_power) || 7500;
 
     const remCap1 = (battSoc1 / 100) * fullAh;
-
-    const chargerPower = this._val(this.config.charger_power) || 0;
-    const chargerCurrent = this._val(this.config.charger_current) || 0;
-    const chargerSoc = this._val(this.config.charger_soc) || 0;
-    const chargerEtaSensor = this._val(this.config.charger_eta);
-    const chargerBattCapWh = Number(this.config.charger_battery_capacity_wh) || 0;
-    const chargerStateStr = this._strVal(this.config.charger_state);
 
     const sun = this._sunData();
     const auraEl = getEl('skyAura');
@@ -1080,12 +1022,6 @@ class KFlowCard extends HTMLElement {
 
     setText('pv1FlowVal', pv1 >= 1000 ? (pv1 / 1000).toFixed(2) + ' kW' : pv1.toFixed(0) + ' W');
     setText('pv2FlowVal', pv2 >= 1000 ? (pv2 / 1000).toFixed(2) + ' kW' : pv2.toFixed(0) + ' W');
-    setDisplay('pv3label', this.config._show_pv_extra);
-    setDisplay('pv3FlowVal', this.config._show_pv_extra);
-    if (this.config._show_pv_extra) setText('pv3FlowVal', pv3 >= 1000 ? (pv3 / 1000).toFixed(2) + ' kW' : pv3.toFixed(0) + ' W');
-    setDisplay('pv4label', this.config._show_pv_extra);
-    setDisplay('pv4FlowVal', this.config._show_pv_extra);
-    if (this.config._show_pv_extra) setText('pv4FlowVal', pv4 >= 1000 ? (pv4 / 1000).toFixed(2) + ' kW' : pv4.toFixed(0) + ' W');
 
     setText('invTodayPv', todayPv + ' kWh');
     setText('invTodayBattChg', todayBattChg + ' kWh');

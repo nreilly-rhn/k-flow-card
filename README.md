@@ -4,7 +4,7 @@
 
 **A beautiful real-time solar energy flow card for Home Assistant.**
 
-k-flow-card visualises the live power flow between your solar panels, battery, inverter, grid and home load — all inside a single animated Lovelace card. It ships with a full visual editor and supports GoodWe inverters, JK-BMS batteries, extra PV strings, and optional EV charger monitoring.
+k-flow-card visualises the live power flow between your solar panels, battery, inverter, grid and home load — all inside a single animated Lovelace card. It ships with a full visual editor and supports GoodWe inverters and JK-BMS batteries.
 
 ---
 
@@ -13,8 +13,7 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 - Fully customizable,label of boxes now can be changed, Battery etc can be disabled. Grid and Battery Flow direction cane be inverted via toggle switch.
 - Live animated energy-flow diagram (PV → Inverter → Battery / Grid / Load)
 - Animated sun arc that tracks actual sunrise / sunset from `sun.sun`
-- Up to 4 PV string power values (PV3 & PV4 optional toggle)
-- EV / car charger panel with SOC, power, current and charge ETA
+- PV1 and PV2 string power values (optional total PV sensor)
 - Battery endurance / charge-ETA estimator
 - Per-cell min/max voltage, BMS temperatures, discharge today
 - Grid import / export energy totals
@@ -46,15 +45,16 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 
 1. Download the following files from the [repository](https://github.com/thekhan1122/k-flow-card):
    - `k-flow-card.js`
+   - `flow.svg`
+   - `pv-array.png`
    - `home-icon.png`
    - `grid-icon.png`
-   - `ev-charger-icon.png`
 
-2. Create the folder `/config/www/community/k-flow-card/` if it does not already exist, and copy all four files into it:
+2. Create the folder `/config/www/community/k-flow-card/` if it does not already exist, and copy all files into it:
 
    ```bash
    mkdir -p /config/www/community/k-flow-card
-   cp k-flow-card.js home-icon.png grid-icon.png ev-charger-icon.png \
+   cp k-flow-card.js flow.svg pv-array.png home-icon.png grid-icon.png \
       /config/www/community/k-flow-card/
    ```
 
@@ -90,13 +90,13 @@ lovelace:
 
 ## 🖼 Icons
 
-The card uses three PNG icons automatically served from the install folder:
+The card uses PNG icons automatically served from the install folder:
 
 | File | Used for |
 |---|---|
+| `pv-array.png` | Inverter / PV array |
 | `home-icon.png` | House / load icon |
 | `grid-icon.png` | Grid / utility icon |
-| `ev-charger-icon.png` | EV charger (only when EV panel is enabled) |
 
 Icons are served from `/local/community/k-flow-card/` for both HACS and manual installs. As long as the files are in the correct folder no extra configuration is required.
 
@@ -155,8 +155,6 @@ inverter_max_power: 6000   # inverter rated power in W
 pv_max_power: 7500         # total PV array peak in W
 
 # ── Feature Toggles ──────────────────────────────────
-_show_pv_extra: false      # set true to show PV3 / PV4
-_show_ev: false            # set true to show EV charger panel
 _show_limits: false        # reveal limits section in visual editor
 ```
 
@@ -178,8 +176,6 @@ _show_limits: false        # reveal limits section in visual editor
 | `pv1_power` | **Yes** | PV string 1 power (W) |
 | `pv2_power` | **Yes** | PV string 2 power (W) |
 | `pv_total_power` | No | Total PV power sensor — overrides the PV1+PV2 sum if provided |
-| `pv3_power` | No | PV string 3 power (requires `_show_pv_extra: true`) |
-| `pv4_power` | No | PV string 4 power (requires `_show_pv_extra: true`) |
 | `inv_temp` | **Yes** | Inverter temperature (°C) |
 | `today_pv` | **Yes** | Today's PV generation (kWh) |
 | `today_batt_chg` | **Yes** | Today's battery charge from PV (kWh) |
@@ -221,23 +217,10 @@ _show_limits: false        # reveal limits section in visual editor
 | `inverter_max_power` | `6000` | Inverter rated output in W — used for load % bar |
 | `pv_max_power` | `7500` | Total PV array peak in W — used for PV bar scaling |
 
-### EV / Car Charger *(requires `_show_ev: true`)*
-
-| Key | Required | Description |
-|---|---|---|
-| `charger_state` | **Yes** | Charger state entity. Expected values: `charging`, `completed`, `finished`, or idle |
-| `charger_power` | **Yes** | Charger output power (W) |
-| `charger_current` | **Yes** | Charger current (A) |
-| `charger_soc` | **Yes** | EV battery state of charge (%) |
-| `charger_eta` | No | Remaining charge time in minutes — if absent, ETA is calculated from capacity |
-| `charger_battery_capacity_wh` | No | EV battery total capacity (Wh) — needed for ETA calculation when no ETA sensor exists |
-
 ### Feature Toggles
 
 | Key | Default | Description |
 |---|---|---|
-| `_show_pv_extra` | `false` | Show PV3 and PV4 strings |
-| `_show_ev` | `false` | Show EV charger panel |
 | `_show_limits` | `false` | Reveal System Limits section in the visual editor |
 
 ---
@@ -252,11 +235,11 @@ _show_limits: false        # reveal limits section in visual editor
 
 ### Icons are missing (blank boxes)
 
-All three PNG files must be in `/config/www/community/k-flow-card/`:
+Icon PNGs and `flow.svg` must be in `/config/www/community/k-flow-card/`:
 
 ```bash
 ls /config/www/community/k-flow-card/
-# Expected: k-flow-card.js  home-icon.png  grid-icon.png  ev-charger-icon.png
+# Expected: k-flow-card.js  flow.svg  pv-array.png  home-icon.png  grid-icon.png
 ```
 
 - **HACS:** If icons are missing after install, go to HACS → k-flow-card → **Redownload**.
@@ -276,10 +259,6 @@ The card falls back to `grid_power_alt` if the primary sensor is unavailable. Se
 
 The card reads `battery_soc` first, then falls back to `goodwe_battery_soc`. Assign at least one.
 
-### EV panel shows `-- W` even while charging
-
-`charger_state` must return exactly `charging`, `completed`, or `finished`. Any other string is treated as idle. Check the raw state in **Developer Tools → States**.
-
 ### Endurance shows `--`
 
 - Set `battery_full_ah` and `battery_full_wh` to match your actual battery pack.
@@ -295,10 +274,12 @@ The arc requires the `sun.sun` entity which is part of the default HA installati
 
 ```
 k-flow-card/
-├── k-flow-card.js       ← Main card script
+├── k-flow-card.js         ← Main card script
+├── flow.svg               ← Energy flow diagram (loaded at runtime)
+├── pv-array.png           ← Inverter / PV array icon
+├── pv-panel.png           ← Single panel icon (optional asset)
 ├── home-icon.png          ← House / load icon
 ├── grid-icon.png          ← Grid / utility icon
-├── ev-charger-icon.png    ← EV charger icon
 ├── hacs.json              ← HACS manifest
 └── README.md
 ```
