@@ -1,20 +1,93 @@
 #!/usr/bin/env python3
-"""Generate a multi-panel PV array icon with transparent background."""
-from PIL import Image, ImageDraw
+"""Generate a realistic multi-panel PV array icon for the flow diagram.
 
-W, H = 860, 637
-img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+Background matches the card/SVG area (#161b22 in k-flow-card.js).
+"""
+from __future__ import annotations
+
+import math
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFilter
+
+SCALE = 2  # supersample for smoother edges, downscale on save
+W, H = 860 * SCALE, 637 * SCALE
+OUT = Path(__file__).resolve().parent.parent / "dist" / "pv-array.png"
+MAX_WIDTH = 860  # cap after trim; height follows aspect ratio
+TRIM_PAD = 20
+
+# Same as Energy Flow card shell background (SVG sits on this in k-flow-card.js)
+SVG_BACKGROUND = (22, 27, 34, 255)  # #161b22
 
 
-def draw_panel(draw, glare_draw, cx, cy, panel_w, panel_h, tilt, cell_rows=4, cell_cols=6, glare_strength=70):
+def lerp(a: float, b: float, t: float) -> float:
+    return a + (b - a) * t
+
+
+def lerp_color(c1: tuple[int, ...], c2: tuple[int, ...], t: float) -> tuple[int, ...]:
+    return tuple(int(lerp(c1[i], c2[i], t)) for i in range(len(c1)))
+
+
+def trim_to_content(img: Image.Image, pad: int = TRIM_PAD, bg: tuple[int, ...] = SVG_BACKGROUND) -> Image.Image:
+    """Crop to panel content; treat background-colored pixels as empty."""
+    r, g, b, _ = bg
+    px = img.load()
+    w, h = img.size
+    min_x, min_y, max_x, max_y = w, h, 0, 0
+    found = False
+    for y in range(h):
+        for x in range(w):
+            pr, pg, pb, pa = px[x, y]
+            if pa < 16:
+                continue
+            # Ignore pixels that are still flat background
+            if abs(pr - r) <= 2 and abs(pg - g) <= 2 and abs(pb - b) <= 2:
+                continue
+            found = True
+            min_x = min(min_x, x)
+            min_y = min(min_y, y)
+            max_x = max(max_x, x)
+            max_y = max(max_y, y)
+    if not found:
+        return img
+    x0 = max(0, min_x - pad)
+    y0 = max(0, min_y - pad)
+    x1 = min(w, max_x + 1 + pad)
+    y1 = min(h, max_y + 1 + pad)
+    return img.crop((x0, y0, x1, y1))
+
+
+def draw_soft_shadow(base: Image.Image, cx: int, cy: int, rx: int, ry: int, alpha: int = 55) -> None:
+    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    sd.ellipse((cx - rx, cy - ry, cx + rx, cy + ry), fill=(0, 0, 0, alpha))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=max(8, rx // 12)))
+    base.alpha_composite(shadow)
+
+
+def draw_panel(
+    draw: ImageDraw.ImageDraw,
+    glare: ImageDraw.ImageDraw,
+    shadow: ImageDraw.ImageDraw,
+    cx: int,
+    cy: int,
+    panel_w: int,
+    panel_h: int,
+    tilt: int,
+    sun_angle: float = 0.35,
+    cell_rows: int = 6,
+    cell_cols: int = 10,
+) -> list[tuple[int, int]]:
+    """Draw one tilted panel; returns face quad for overlap shadows."""
+    skew = int(panel_h * 0.06)
     tl = (cx - panel_w // 2 + tilt, cy - panel_h // 2)
-    tr = (cx + panel_w // 2 + tilt, cy - panel_h // 2 - int(panel_h * 0.05))
+    tr = (cx + panel_w // 2 + tilt, cy - panel_h // 2 - skew)
     br = (cx + panel_w // 2 - tilt, cy + panel_h // 2)
-    bl = (cx - panel_w // 2 - tilt, cy + panel_h // 2 - int(panel_h * 0.05))
+    bl = (cx - panel_w // 2 - tilt, cy + panel_h // 2 - skew)
     quad = [tl, tr, br, bl]
     center = (cx, cy)
 
-    def inset_poly(points, factor):
+    def inset_poly(points: list[tuple[int, int]], factor: float) -> list[tuple[int, int]]:
         return [
             (
                 int(center[0] + (p[0] - center[0]) * (1 - factor)),
@@ -23,11 +96,17 @@ def draw_panel(draw, glare_draw, cx, cy, panel_w, panel_h, tilt, cell_rows=4, ce
             for p in points
         ]
 
-    draw.polygon(quad, fill=(175, 182, 194, 255))
-    face = inset_poly(quad, 0.07)
-    draw.polygon(face, fill=(22, 62, 112, 255))
+    # Frame depth: outer bezel → mid → inner lip
+    draw.polygon(quad, fill=(198, 204, 212, 255))
+    bezel = inset_poly(quad, 0.025)
+    draw.polygon(bezel, fill=(168, 174, 184, 255))
+    lip = inset_poly(quad, 0.055)
+    draw.polygon(lip, fill=(138, 145, 156, 255))
 
-    def face_pt(u, v):
+    face = inset_poly(quad, 0.09)
+    draw.polygon(face, fill=(12, 22, 38, 255))
+
+    def face_pt(u: float, v: float) -> tuple[int, int]:
         top = (
             int(face[0][0] + (face[1][0] - face[0][0]) * u),
             int(face[0][1] + (face[1][1] - face[0][1]) * u),
@@ -41,17 +120,24 @@ def draw_panel(draw, glare_draw, cx, cy, panel_w, panel_h, tilt, cell_rows=4, ce
             int(top[1] + (bot[1] - top[1]) * v),
         )
 
+    # Photovoltaic cells — dark blue-black with subtle wafer variation
     for r in range(cell_rows):
         for c in range(cell_cols):
             t0, t1 = c / cell_cols, (c + 1) / cell_cols
             s0, s1 = r / cell_rows, (r + 1) / cell_rows
             p1, p2 = face_pt(t0, s0), face_pt(t1, s0)
             p3, p4 = face_pt(t1, s1), face_pt(t0, s1)
-            shade = 24 + int(38 * ((r + c) % 3))
-            blue = 88 + int(22 * (r / max(cell_rows - 1, 1)))
-            draw.polygon([p1, p2, p3, p4], fill=(shade, blue, 148, 255))
+            u_mid = (t0 + t1) / 2
+            v_mid = (s0 + s1) / 2
+            # Brighter toward sun (upper-left), darker lower-right
+            light = 1.0 - 0.22 * u_mid - 0.18 * v_mid + 0.08 * math.sin((r * 3 + c) * 1.7)
+            base = lerp_color((8, 18, 32), (32, 58, 92), light)
+            tint = ((r + c) % 5) * 2
+            fill = (min(48, base[0] + tint), min(70, base[1] + tint), min(105, base[2] + tint * 2), 255)
+            draw.polygon([p1, p2, p3, p4], fill=fill)
 
-    lw = max(1, panel_w // 90)
+    lw = max(1, panel_w // 110)
+    grid_color = (6, 14, 28, 235)
     for i in range(cell_rows + 1):
         t = i / cell_rows
         a = (
@@ -62,7 +148,7 @@ def draw_panel(draw, glare_draw, cx, cy, panel_w, panel_h, tilt, cell_rows=4, ce
             int(face[1][0] + (face[2][0] - face[1][0]) * t),
             int(face[1][1] + (face[2][1] - face[1][1]) * t),
         )
-        draw.line([a, b], fill=(10, 28, 55, 220), width=lw)
+        draw.line([a, b], fill=grid_color, width=lw)
 
     for i in range(cell_cols + 1):
         t = i / cell_cols
@@ -74,62 +160,162 @@ def draw_panel(draw, glare_draw, cx, cy, panel_w, panel_h, tilt, cell_rows=4, ce
             int(face[3][0] + (face[2][0] - face[3][0]) * t),
             int(face[3][1] + (face[2][1] - face[3][1]) * t),
         )
-        draw.line([a, b], fill=(10, 28, 55, 220), width=lw)
+        draw.line([a, b], fill=grid_color, width=lw)
 
-    gw = max(8, panel_w // 8)
-    glare_draw.polygon(
+    # Silver busbars (5 per cell — typical mono panel)
+    bus_w = max(1, panel_w // 130)
+    for c in range(cell_cols):
+        for b in range(5):
+            u = (c + (b + 1) / 6) / cell_cols
+            p_top = face_pt(u, 0.04)
+            p_bot = face_pt(u, 0.96)
+            draw.line([p_top, p_bot], fill=(200, 208, 220, 175), width=bus_w)
+
+    # Half-cell finger lines (fine horizontal conductors)
+    finger_w = max(1, panel_w // 200)
+    fingers_per_cell = 8
+    for r in range(cell_rows):
+        for c in range(cell_cols):
+            t0, t1 = c / cell_cols, (c + 1) / cell_cols
+            s0, s1 = r / cell_rows, (r + 1) / cell_rows
+            for f in range(1, fingers_per_cell):
+                v = s0 + (s1 - s0) * f / fingers_per_cell
+                p_l = face_pt(t0 + 0.02, v)
+                p_r = face_pt(t1 - 0.02, v)
+                draw.line([p_l, p_r], fill=(45, 72, 108, 90), width=finger_w)
+
+    # Glass glare — soft sky reflection from upper-left
+    gw = max(14, panel_w // 5)
+    glare.polygon(
         [
-            (face[0][0] + gw // 3, face[0][1] + gw // 4),
-            (face[0][0] + gw * 2, face[0][1] + gw // 3),
-            (face[0][0] + int(gw * 1.5), face[0][1] + gw * 2),
-            (face[0][0] + 4, face[0][1] + int(gw * 1.2)),
+            (face[0][0] + gw // 5, face[0][1] + gw // 6),
+            (face[0][0] + gw * 2, face[0][1] + gw // 4),
+            (face[0][0] + int(gw * 1.35), face[0][1] + int(gw * 1.6)),
+            (face[0][0] + gw // 3, face[0][1] + int(gw * 2.1)),
+            (face[0][0] + 6, face[0][1] + int(gw * 1.1)),
         ],
-        fill=(90, 165, 235, glare_strength),
+        fill=(120, 185, 235, 48),
+    )
+    glare.polygon(
+        [
+            (face[1][0] - gw, face[1][1] + gw // 3),
+            (face[1][0] - gw // 3, face[1][1] + gw // 2),
+            (face[1][0] - gw // 2, face[1][1] + gw),
+            (face[1][0] - int(gw * 0.9), face[1][1] + gw // 3),
+        ],
+        fill=(90, 150, 210, 28),
     )
 
-    draw.line([tl, tr], fill=(230, 236, 244, 255), width=max(2, panel_w // 70))
-    draw.line([tl, bl], fill=(200, 208, 218, 255), width=max(1, panel_w // 90))
+    # Frame highlights (anodized aluminum catch light)
+    draw.line([tl, tr], fill=(235, 240, 248, 255), width=max(2, panel_w // 65))
+    draw.line([tl, bl], fill=(210, 218, 228, 255), width=max(1, panel_w // 85))
+    draw.line([br, tr], fill=(95, 102, 115, 200), width=max(1, panel_w // 95))
 
-    foot_w = max(12, panel_w // 8)
-    for dx in (panel_w // 5, panel_w - panel_w // 5 - foot_w):
+    # Ground-mount feet
+    foot_w = max(14, panel_w // 7)
+    foot_h = max(8, panel_h // 14)
+    for dx in (panel_w // 6, panel_w - panel_w // 6 - foot_w):
         fx = bl[0] + dx
+        fy = bl[1] + 3
         draw.polygon(
             [
-                (fx, bl[1] + 4),
-                (fx + foot_w, bl[1] + 4),
-                (fx + foot_w - 4, bl[1] + foot_w // 2),
-                (fx - 3, bl[1] + foot_w // 2),
+                (fx, fy),
+                (fx + foot_w, fy),
+                (fx + foot_w - 5, fy + foot_h),
+                (fx - 4, fy + foot_h),
             ],
-            fill=(150, 158, 170, 220),
+            fill=(120, 128, 140, 230),
+        )
+        shadow.polygon(
+            [
+                (fx + 3, fy + foot_h),
+                (fx + foot_w, fy + foot_h),
+                (fx + foot_w + 8, fy + foot_h + 6),
+                (fx - 2, fy + foot_h + 6),
+            ],
+            fill=(0, 0, 0, 35),
         )
 
-    return quad
+    # Rail along bottom edge of frame
+    rail = [
+        (bl[0] + panel_w // 12, bl[1] + 2),
+        (br[0] - panel_w // 12, br[1] + 2),
+        (br[0] - panel_w // 12, br[1] + 8),
+        (bl[0] + panel_w // 12, bl[1] + 8),
+    ]
+    draw.polygon(rail, fill=(150, 158, 170, 220))
+
+    return face
 
 
-# 3x3 staggered array (back → front for paint order)
-panel_w, panel_h = 200, 118
-tilt = 14
-step_x, step_y = 168, 72
-origin_x, origin_y = 118, 108
+def draw_overlap_shadow(shadow_draw: ImageDraw.ImageDraw, front_face: list[tuple[int, int]]) -> None:
+    """Darken area under a front panel where it covers rear panels."""
+    cx = sum(p[0] for p in front_face) / 4
+    cy = sum(p[1] for p in front_face) / 4
+    inset = [
+        (int(cx + (p[0] - cx) * 0.97), int(cy + (p[1] - cy) * 0.97))
+        for p in front_face
+    ]
+    shadow_draw.polygon(inset, fill=(0, 0, 0, 42))
 
-panels = []
-for row in range(3):
-    for col in range(3):
-        cx = origin_x + col * step_x + row * 36
-        cy = origin_y + row * step_y + col * 18
-        panels.append((row + col, cx, cy))  # sort key: back first
 
-panels.sort(key=lambda p: p[0])
+def main() -> None:
+    img = Image.new("RGBA", (W, H), SVG_BACKGROUND)
 
-draw = ImageDraw.Draw(img)
-glare = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-glare_draw = ImageDraw.Draw(glare)
+    # Ground shadow under entire array
+    draw_soft_shadow(img, W // 2 + 20, H - 42, 320, 38, alpha=50)
 
-for _, cx, cy in panels:
-    draw_panel(draw, glare_draw, cx, cy, panel_w, panel_h, tilt)
+    panel_w, panel_h = 200 * SCALE, 118 * SCALE
+    tilt = 14 * SCALE
+    step_x, step_y = 168 * SCALE, 72 * SCALE
+    origin_x, origin_y = 118 * SCALE, 108 * SCALE
 
-img = Image.alpha_composite(img, glare)
+    panels: list[tuple[float, int, int, int]] = []
+    for row in range(3):
+        for col in range(3):
+            cx = origin_x + col * step_x + row * 36
+            cy = origin_y + row * step_y + col * 18
+            depth = row + col + (col * 0.1)
+            panels.append((depth, cx, cy, row))
 
-out = "/home/nreilly/git/github.com/nreilly-rhn/k-flow-card/dist/pv-array.png"
-img.save(out, "PNG", optimize=True)
-print(f"Wrote {out} ({W}x{H})")
+    panels.sort(key=lambda p: p[0])
+
+    draw = ImageDraw.Draw(img)
+    glare = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    glare_draw = ImageDraw.Draw(glare)
+    overlap_shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    overlap_draw = ImageDraw.Draw(overlap_shadow)
+
+    faces: list[list[tuple[int, int]]] = []
+    for _, cx, cy, row in panels:
+        sun = 0.28 + row * 0.04
+        face = draw_panel(
+            draw, glare_draw, overlap_draw, cx, cy, panel_w, panel_h, tilt, sun_angle=sun
+        )
+        faces.append(face)
+
+    # Overlap shadows for front panels (painted after all panels, before glare)
+    for face in faces[3:]:
+        draw_overlap_shadow(overlap_draw, face)
+
+    img = Image.alpha_composite(img, overlap_shadow)
+    img = Image.alpha_composite(img, glare)
+
+    # Downscale from supersampled render, then trim empty transparent margins
+    img = img.resize((img.width // SCALE, img.height // SCALE), Image.Resampling.LANCZOS)
+    img = trim_to_content(img)
+
+    if img.width > MAX_WIDTH:
+        ratio = MAX_WIDTH / img.width
+        img = img.resize(
+            (MAX_WIDTH, max(1, int(img.height * ratio))),
+            Image.Resampling.LANCZOS,
+        )
+
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    img.save(OUT, "PNG", optimize=True)
+    print(f"Wrote {OUT} ({img.width}x{img.height}, background #161b22)")
+
+
+if __name__ == "__main__":
+    main()
