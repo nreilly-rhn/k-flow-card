@@ -4,7 +4,7 @@
 
 **A beautiful real-time solar energy flow card for Home Assistant.**
 
-k-flow-card visualises the live power flow between your solar panels, battery, inverter, grid and home load — all inside a single animated Lovelace card. It ships with a full visual editor and supports GoodWe inverters, JK-BMS batteries, dual-battery setups, extra PV strings, and optional EV charger monitoring.
+k-flow-card visualises the live power flow between your solar panels, battery, inverter, grid and home load — all inside a single animated Lovelace card. It ships with a full visual editor and supports GoodWe inverters, JK-BMS batteries, extra PV strings, and optional EV charger monitoring.
 
 ---
 
@@ -13,7 +13,6 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 - Fully customizable,label of boxes now can be changed, Battery etc can be disabled. Grid and Battery Flow direction cane be inverted via toggle switch.
 - Live animated energy-flow diagram (PV → Inverter → Battery / Grid / Load)
 - Animated sun arc that tracks actual sunrise / sunset from `sun.sun`
-- Dual-battery support (stacked side-by-side display)
 - Up to 4 PV string power values (PV3 & PV4 optional toggle)
 - EV / car charger panel with SOC, power, current and charge ETA
 - Battery endurance / charge-ETA estimator
@@ -157,7 +156,6 @@ pv_max_power: 7500         # total PV array peak in W
 
 # ── Feature Toggles ──────────────────────────────────
 _show_pv_extra: false      # set true to show PV3 / PV4
-_show_battery2: false      # set true to show secondary battery
 _show_ev: false            # set true to show EV charger panel
 _show_limits: false        # reveal limits section in visual editor
 ```
@@ -214,16 +212,6 @@ _show_limits: false        # reveal limits section in visual editor
 | `goodwe_battery_soc` | No | Inverter-reported SOC — fallback if primary is unavailable |
 | `goodwe_battery_curr` | No | Inverter-reported current — fallback |
 
-### Secondary Battery *(requires `_show_battery2: true`)*
-
-| Key | Description |
-|---|---|
-| `battery2_soc` | SOC (%) |
-| `battery2_power` | Power (W) |
-| `battery2_current` | Current (A) |
-| `battery2_voltage` | Voltage (V) |
-| `battery2_mos` | BMS temperature (°C) |
-
 ### System Limits
 
 | Key | Default | Description |
@@ -249,7 +237,6 @@ _show_limits: false        # reveal limits section in visual editor
 | Key | Default | Description |
 |---|---|---|
 | `_show_pv_extra` | `false` | Show PV3 and PV4 strings |
-| `_show_battery2` | `false` | Show secondary / second battery |
 | `_show_ev` | `false` | Show EV charger panel |
 | `_show_limits` | `false` | Reveal System Limits section in the visual editor |
 
@@ -301,10 +288,6 @@ The card reads `battery_soc` first, then falls back to `goodwe_battery_soc`. Ass
 ### Sun arc does not move
 
 The arc requires the `sun.sun` entity which is part of the default HA installation. Verify it exists in **Developer Tools → States**. You can override it with the `sun` config key if needed.
-
-### Dual battery not visible
-
-Enable with `_show_battery2: true` in YAML or toggle **Secondary Battery → Enable** in the visual editor, then assign all `battery2_*` sensors.
 
 ---
 
