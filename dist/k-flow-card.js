@@ -454,13 +454,11 @@ class KFlowCardEditor extends HTMLElement {
 
     shell.appendChild(makeSection('solar', '☀️', 'Solar', [
       picker('pv1_power', 'PV1 Power'),
-      picker('pv2_power', 'PV2 Power'),
     ]));
 
     shell.appendChild(makeSection('solar_extras', '☀️', 'Solar Extras', [
       picker('pv_total_power',  'Total PV Power',  true),
       divider(),
-      picker('inv_temp',        'Inverter Temp'),
       picker('today_pv',        'Today PV Gen'),
       picker('today_batt_chg',  'Today Batt Charge'),
       picker('today_load',      'Today Load'),
@@ -524,7 +522,6 @@ class KFlowCard extends HTMLElement {
   static getStubConfig() {
     return {
       pv1_power: 'sensor.goodwe_pv1_power',
-      pv2_power: 'sensor.goodwe_pv2_power',
       pv_total_power: 'sensor.goodwe_pv_power',
       grid_active_power: 'sensor.goodwe_active_power',
       grid_import_energy: 'sensor.goodwe_today_energy_import',
@@ -544,7 +541,6 @@ class KFlowCard extends HTMLElement {
       battery_max_cell: 'sensor.jk_cellmax',
       goodwe_battery_soc: 'sensor.goodwe_battery_state_of_charge',
       goodwe_battery_curr: 'sensor.goodwe_battery_current',
-      inv_temp: 'sensor.goodwe_inverter_temperature_module',
       batt_dis: 'sensor.goodwe_today_battery_discharge',
       battery_full_ah: 314,
       battery_full_wh: 16076,
@@ -774,19 +770,13 @@ class KFlowCard extends HTMLElement {
 
       <g id="pvArrayIconImg" transform="translate(205,155)" style="opacity:1"><image href="${iconPath}/pv-array.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="203" text-anchor="middle" font-size="14" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
-      <text id="invTempFlow" x="260" y="222" text-anchor="middle" font-size="12" font-weight="700" fill="#58a6ff">-- °C</text>
       <text id="invLoadPctFlow" x="260" y="240" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
 
       <text id="pv1label" x="8" y="360" font-size="9" fill="#8b949e" letter-spacing="1">PV1</text>
       <text id="pv1FlowVal" x="8" y="374" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>
-      <text id="pv2label" x="8" y="392" font-size="9" fill="#8b949e" letter-spacing="1">PV2</text>
-      <text id="pv2FlowVal" x="8" y="406" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>
-      ${pv3txt}
-      ${pv4txt}
 
       <g id="homeIconImg" transform="translate(179,339)" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="fcLoadVal" x="174" y="420" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
-      ${evtxt}
       </svg></div>`+
 
       `<div style="display:flex;gap:8px;align-items:center;margin-top:10px">
@@ -824,9 +814,8 @@ class KFlowCard extends HTMLElement {
     const setDisplay = (id, visible) => { const el = getEl(id); if (!el) return; el.style.display = visible ? '' : 'none'; };
 
     const pv1 = this._val(this.config.pv1_power) || 0;
-    const pv2 = this._val(this.config.pv2_power) || 0;
     const totalPvSensor = this._val(this.config.pv_total_power);
-    const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1 + pv2;
+    const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1;
     const _gridPrimary = this._val(this.config.grid_active_power);
     let gridActive = _gridPrimary !== null ? _gridPrimary : (this._val(this.config.grid_power_alt) ?? 0);
     if (this.config.invert_grid_power) gridActive = -gridActive;
@@ -848,7 +837,6 @@ class KFlowCard extends HTMLElement {
     const minCell1 = this._val(this.config.battery_min_cell) || 0;
     const maxCell1 = this._val(this.config.battery_max_cell) || 0;
     const battDis1 = this._val(this.config.batt_dis) || 0;
-    const invTemp = this._val(this.config.inv_temp) || 0;
 
     // System limits – direct numbers
     const fullAh = Number(this.config.battery_full_ah) || 314;
@@ -1004,9 +992,7 @@ class KFlowCard extends HTMLElement {
     const badge = getEl('battStatusBadge');
     if (badge) { badge.textContent = absPwr1 < 50 ? 'IDLE' : isCharging1 ? 'CHG' : 'DISCHG'; badge.style.color = absPwr1 < 50 ? '#8b949e' : isCharging1 ? '#00d7ff' : '#3ce878'; }
 
-    setText('invTempFlow', invTemp.toFixed(1) + ' °C');
     setText('invNameLabel', this.config.inverter_name || 'INV');
-    setAttr('invTempFlow', 'fill', invTemp <= 45 ? '#58a6ff' : invTemp <= 55 ? '#f39c4b' : '#f85149');
     const invLoadPct = Math.min(load / invMax * 100, 100).toFixed(0);
     setText('invLoadPctFlow', invLoadPct + '%'); setAttr('invLoadPctFlow', 'fill', invLoadPct <= 50 ? '#3fb950' : '#f39c4b');
 
@@ -1021,7 +1007,6 @@ class KFlowCard extends HTMLElement {
     setAttr('fcLoadVal', 'fill', load > 10 ? loadFlowColor : '#8b949e');
 
     setText('pv1FlowVal', pv1 >= 1000 ? (pv1 / 1000).toFixed(2) + ' kW' : pv1.toFixed(0) + ' W');
-    setText('pv2FlowVal', pv2 >= 1000 ? (pv2 / 1000).toFixed(2) + ' kW' : pv2.toFixed(0) + ' W');
 
     setText('invTodayPv', todayPv + ' kWh');
     setText('invTodayBattChg', todayBattChg + ' kWh');

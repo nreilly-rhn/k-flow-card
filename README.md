@@ -13,7 +13,7 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 - Fully customizable,label of boxes now can be changed, Battery etc can be disabled. Grid and Battery Flow direction cane be inverted via toggle switch.
 - Live animated energy-flow diagram (PV → Inverter → Battery / Grid / Load)
 - Animated sun arc that tracks actual sunrise / sunset from `sun.sun`
-- PV1 and PV2 string power values (optional total PV sensor)
+- PV1 string power (optional total PV sensor)
 - Battery endurance / charge-ETA estimator
 - Per-cell min/max voltage, BMS temperatures, discharge today
 - Grid import / export energy totals
@@ -116,11 +116,9 @@ inverter_name: My GoodWe
 
 # ── Solar ────────────────────────────────────────────
 pv1_power: sensor.goodwe_pv1_power
-pv2_power: sensor.goodwe_pv2_power
-pv_total_power: sensor.goodwe_pv_power   # optional — calculated from PV1+PV2 if omitted
+pv_total_power: sensor.goodwe_pv_power   # optional — uses PV1 if omitted
 
 # ── Solar Extras ─────────────────────────────────────
-inv_temp: sensor.goodwe_inverter_temperature_module
 today_pv: sensor.goodwe_today_s_pv_generation
 today_batt_chg: sensor.goodwe_today_battery_charge
 today_load: sensor.goodwe_today_load
@@ -173,10 +171,8 @@ _show_limits: false        # reveal limits section in visual editor
 
 | Key | Required | Description |
 |---|---|---|
-| `pv1_power` | **Yes** | PV string 1 power (W) |
-| `pv2_power` | **Yes** | PV string 2 power (W) |
-| `pv_total_power` | No | Total PV power sensor — overrides the PV1+PV2 sum if provided |
-| `inv_temp` | **Yes** | Inverter temperature (°C) |
+| `pv1_power` | **Yes** | PV string power (W) |
+| `pv_total_power` | No | Total PV power sensor — overrides `pv1_power` if provided |
 | `today_pv` | **Yes** | Today's PV generation (kWh) |
 | `today_batt_chg` | **Yes** | Today's battery charge from PV (kWh) |
 | `today_load` | **Yes** | Today's total load (kWh) |
