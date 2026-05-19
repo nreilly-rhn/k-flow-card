@@ -46,7 +46,6 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 1. Download the following files from the [repository](https://github.com/thekhan1122/k-flow-card):
    - `k-flow-card.js`
    - `flow.svg`
-   - `pv-array.png`
    - `home-icon.png`
    - `grid-icon.png`
    - `powerwall-gateway-icon.png`
@@ -56,7 +55,7 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 
    ```bash
    mkdir -p /config/www/community/k-flow-card
-   cp k-flow-card.js flow.svg pv-icon.png home-icon.png grid-icon.png powerwall-gateway-icon.png fronius-inverter-icon.png \
+   cp k-flow-card.js flow.svg home-icon.png grid-icon.png powerwall-gateway-icon.png fronius-inverter-icon.png \
       /config/www/community/k-flow-card/
    ```
 
@@ -96,11 +95,10 @@ The card uses PNG icons automatically served from the install folder:
 
 | File | Used for |
 |---|---|
-| `pv-icon.png` / `pv-array.png` | PV array (solar panels) |
 | `fronius-inverter-icon.png` | Inverter hub on the flow diagram |
 | `home-icon.png` | House / load icon |
 | `grid-icon.png` | Grid / utility icon |
-| `powerwall-gateway-icon.png` | Gateway hub (PV→inverter→gateway←grid, gateway→home) |
+| `powerwall-gateway-icon.png` | Gateway hub (inverter→gateway←grid, gateway→home) |
 
 Icons are served from `/local/community/k-flow-card/` for both HACS and manual installs. As long as the files are in the correct folder no extra configuration is required.
 
@@ -229,7 +227,7 @@ Icon PNGs and `flow.svg` must be in `/config/www/community/k-flow-card/`:
 
 ```bash
 ls /config/www/community/k-flow-card/
-# Expected: k-flow-card.js  flow.svg  pv-array.png  home-icon.png  grid-icon.png
+# Expected: k-flow-card.js  flow.svg  home-icon.png  grid-icon.png  fronius-inverter-icon.png  powerwall-gateway-icon.png
 ```
 
 - **HACS:** If icons are missing after install, go to HACS → k-flow-card → **Redownload**.
@@ -266,8 +264,6 @@ The arc requires the `sun.sun` entity which is part of the default HA installati
 k-flow-card/
 ├── k-flow-card.js         ← Main card script
 ├── flow.svg               ← Energy flow diagram (loaded at runtime)
-├── pv-array.png           ← Inverter / PV array icon
-├── pv-panel.png           ← Single panel icon (optional asset)
 ├── home-icon.png          ← House / load icon
 ├── grid-icon.png          ← Grid / utility icon
 ├── hacs.json              ← HACS manifest

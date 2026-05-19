@@ -451,7 +451,6 @@ class KFlowCardEditor extends HTMLElement {
 
     shell.appendChild(makeSection('solar', '☀️', 'Solar', [
       picker('pv1_power', 'PV1 Power'),
-      numberField('pv_icon_glow', 'PV icon glow size', 0, 24, 1, 'px'),
     ]));
 
     shell.appendChild(makeSection('solar_extras', '☀️', 'Solar Extras', [
@@ -534,7 +533,6 @@ class KFlowCard extends HTMLElement {
       battery_full_wh: 16076,
       inverter_max_power: 6000,
       pv_max_power: 7500,
-      pv_icon_glow: 0,
       sun: 'sun.sun',
       inverter_name: '',
       inverter_power: '',
@@ -612,17 +610,6 @@ class KFlowCard extends HTMLElement {
     return{y:fY,height:fH,color:c,filter:fH>4?f:'none',textColor:tc};
   }
 
-  _pvGlowFilter() {
-    const px = Number(this.config.pv_icon_glow);
-    const size = Number.isFinite(px) ? px : 5;
-    if (size <= 0) return 'none';
-    const inner = Math.max(1, size * 0.5).toFixed(1);
-    const outer = Math.max(2, size * 1.25).toFixed(1);
-    const innerA = Math.min(0.95, 0.45 + size * 0.05).toFixed(2);
-    const outerA = Math.min(0.5, 0.12 + size * 0.028).toFixed(2);
-    return `drop-shadow(0 0 ${inner}px rgba(255,220,60,${innerA})) drop-shadow(0 0 ${outer}px rgba(255,175,20,${outerA}))`;
-  }
-
   _flowLevel(w,type){
     if(type==='solar'){if(w<200)return{dur:4,size:1.8,count:6};if(w<600)return{dur:3.2,size:2.2,count:12};if(w<1200)return{dur:2.7,size:2.5,count:20};if(w<2500)return{dur:2.4,size:2.8,count:30};if(w<4000)return{dur:1.8,size:3.2,count:42};if(w<6000)return{dur:1.2,size:3.5,count:55};return{dur:.9,size:3.8,count:65};}
     if(w<150)return{dur:4,size:1.8,count:4};if(w<500)return{dur:3.2,size:2.2,count:8};if(w<1000)return{dur:2.7,size:2.5,count:14};if(w<2000)return{dur:2.4,size:2.8,count:22};if(w<3000)return{dur:1.8,size:3.2,count:30};if(w<4500)return{dur:1.5,size:3.5,count:40};return{dur:.9,size:3.8,count:50};
@@ -635,22 +622,19 @@ class KFlowCard extends HTMLElement {
   _buildStaticSVG() {
     const showBatt1 = !!(this.config._show_battery !== false);
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
-    // Topology: Sun→PV→Inverter→Gateway←Grid ; Gateway→Home ; Battery→Gateway
+    // Topology: Sun→Inverter→Gateway←Grid ; Gateway→Home ; Battery→Gateway
     const GW_X = 260;
     const GW_Y = 400;
     const INV_BUS_X = 260;
     const INV_BUS_Y = 300;
-    const PV_ICON_Y = 105;
-    const PV_ICON_W = 120;
-    const PV_ICON_H = 40;  // matches pv-icon.png aspect; transparent PNG — no square letterbox
-    const PV_BUS_X = 260;
-    const PV_BUS_Y = PV_ICON_Y + PV_ICON_H;
+    const PV_FLOW_X = 260;
+    const PV_FLOW_Y = 105;  // sun arc termination / PV→inverter flow start
     const INV_ICON_CY = 261;
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = 475;
     const HOME_ICON_Y = 485;
     const HOME_LOAD_LABEL_Y = 566;
-    this._flowLayout = { pvEndY: PV_ICON_Y };
+    this._flowLayout = { pvEndY: PV_FLOW_Y };
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
     const battText = `
@@ -671,10 +655,10 @@ class KFlowCard extends HTMLElement {
       <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
       <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
     const pvInvGhostPath = `
-      <path d="M ${PV_BUS_X},${PV_BUS_Y} V ${INV_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`;
+      <path d="M ${PV_FLOW_X},${PV_FLOW_Y} V ${INV_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`;
     const pvInvFlowPaths = `
-      <path id="flowPvInvIn" d="M ${PV_BUS_X},${PV_BUS_Y} V ${INV_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
-      <path id="flowPvInvOut" d="M ${PV_BUS_X},${PV_BUS_Y} V ${INV_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
+      <path id="flowPvInvIn" d="M ${PV_FLOW_X},${PV_FLOW_Y} V ${INV_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+      <path id="flowPvInvOut" d="M ${PV_FLOW_X},${PV_FLOW_Y} V ${INV_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
     const gwGhostPath = `
       <path d="M ${INV_BUS_X},${INV_BUS_Y} V ${GW_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
       <path d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
@@ -790,7 +774,6 @@ class KFlowCard extends HTMLElement {
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="pvArrayIconImg" transform="translate(${260 - PV_ICON_W / 2},${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="${PV_ICON_W}" height="${PV_ICON_H}" preserveAspectRatio="xMidYMin slice"/></g>
       <g id="inverterIconImg" transform="translate(260,${INV_ICON_CY}) rotate(-90) translate(-50,-39)" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="100" height="78" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="320" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
       <text id="invLoadPctFlow" x="260" y="336" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
@@ -958,12 +941,6 @@ class KFlowCard extends HTMLElement {
     if (battIconWrap) { battIconWrap.setAttribute('filter', absPwr1 >= 50 ? 'url(#iconGlowBlue)' : ''); }
     const gridImg = getEl('gridIconImg');
     if (gridImg) { gridImg.style.opacity = Math.abs(gridActive) < 10 ? '0.4' : '1'; gridImg.setAttribute('filter', gridActive >= 50 ? 'url(#iconGlowOrange)' : gridActive <= -50 ? 'url(#iconGlowYellow)' : ''); }
-    const pvImg = getEl('pvArrayIconImg');
-    if (pvImg) {
-      pvImg.style.opacity = showPvInv ? '1' : '0.65';
-      pvImg.removeAttribute('filter');
-      pvImg.style.filter = (showPvInv && invPwr >= 50) ? this._pvGlowFilter() : 'none';
-    }
     const invImg = getEl('inverterIconImg');
     if (invImg) {
       const invActive = showPvInv || showInvGw;
