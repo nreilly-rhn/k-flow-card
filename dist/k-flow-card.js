@@ -624,9 +624,9 @@ class KFlowCard extends HTMLElement {
     const GW_X = 260;
     const GW_Y = 400;
     const INV_BUS_X = 260;
-    const INV_BUS_Y = 355;
+    const INV_BUS_Y = 327;
     const PV_ICON_Y = 105;
-    const INV_ICON_CY = 289;
+    const INV_ICON_CY = 261;
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = 430;
     this._flowLayout = { pvEndY: PV_ICON_Y };
@@ -764,8 +764,8 @@ class KFlowCard extends HTMLElement {
 
       <g id="pvArrayIconImg" transform="translate(205,${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
       <g id="inverterIconImg" transform="translate(260,${INV_ICON_CY}) rotate(-90) translate(-50,-39)" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="100" height="78" preserveAspectRatio="xMidYMid meet"/></g>
-      <text id="invNameLabel" x="260" y="348" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
-      <text id="invLoadPctFlow" x="260" y="364" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
+      <text id="invNameLabel" x="260" y="320" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
+      <text id="invLoadPctFlow" x="260" y="336" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
 
       <text id="pv1label" x="8" y="360" font-size="9" fill="#8b949e" letter-spacing="1">PV1</text>
       <text id="pv1FlowVal" x="8" y="374" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>
