@@ -15,7 +15,7 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
 - Animated sun arc that tracks actual sunrise / sunset from `sun.sun`
 - PV1 string power (optional total PV sensor)
 - Battery endurance / charge-ETA estimator
-- Per-cell min/max voltage, BMS temperatures, discharge today
+- Battery discharge today and endurance / charge ETA
 - Grid import / export energy totals
 - Full visual editor — no YAML required
 - Animated glowing icons with directional flow arrows
@@ -135,11 +135,6 @@ battery_soc: sensor.jk_soc
 battery_power: sensor.jk_power
 battery_current: sensor.jk_current
 battery_voltage: sensor.jk_voltage
-battery_temp1: sensor.jk_temp1
-battery_temp2: sensor.jk_temp2
-battery_mos: sensor.jk_mos
-battery_min_cell: sensor.jk_cellmin
-battery_max_cell: sensor.jk_cellmax
 batt_dis: sensor.goodwe_today_battery_discharge
 
 # ── Fallback sensors (inverter-reported, optional) ───
@@ -195,11 +190,6 @@ _show_limits: false        # reveal limits section in visual editor
 | `battery_power` | **Yes** | Battery power (W). Positive = charging, negative = discharging |
 | `battery_current` | **Yes** | Battery current (A) |
 | `battery_voltage` | **Yes** | Battery pack voltage (V) |
-| `battery_temp1` | **Yes** | Cell temperature 1 (°C) |
-| `battery_temp2` | **Yes** | Cell temperature 2 (°C) |
-| `battery_mos` | **Yes** | BMS MOSFET temperature (°C) |
-| `battery_min_cell` | **Yes** | Minimum cell voltage (V) |
-| `battery_max_cell` | **Yes** | Maximum cell voltage (V) |
 | `batt_dis` | **Yes** | Battery discharged today (kWh) |
 | `goodwe_battery_soc` | No | Inverter-reported SOC — fallback if primary is unavailable |
 | `goodwe_battery_curr` | No | Inverter-reported current — fallback |

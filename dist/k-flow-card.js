@@ -434,7 +434,7 @@ class KFlowCardEditor extends HTMLElement {
     const labelInfoBanner = (() => {
       const info = document.createElement('div');
       info.style.cssText = 'font-size:.72rem;line-height:1.5;color:var(--secondary-text-color);background:var(--secondary-background-color,rgba(0,0,0,.04));border:1px solid var(--divider-color,rgba(0,0,0,.10));border-radius:7px;padding:7px 10px;margin-bottom:10px;';
-      info.innerHTML = '&#x1F4A1; <strong>Tip:</strong> The first six boxes let you rename the battery stat tiles to anything you like. Enable <em>Custom Entities</em> below to also override which sensor each tile reads &mdash; matching fields in Battery sections will then lock to prevent duplication.';
+      info.innerHTML = '&#x1F4A1; <strong>Tip:</strong> The boxes below let you rename the battery stat tiles to anything you like. Enable <em>Custom Entities</em> below to also override which sensor each tile reads &mdash; matching fields in Battery sections will then lock to prevent duplication.';
       return info;
     })();
 
@@ -443,11 +443,7 @@ class KFlowCardEditor extends HTMLElement {
       switchRow('_labels_custom_entities', '🔗 Enable custom entities',
         'When ON, entity pickers below activate and their counterparts in Battery sections are locked to prevent duplication.'),
       (() => { const d = document.createElement('div'); d.className='divider'; return d; })(),
-      labelRow('label_cell_temp_minmax', 'Cell Temp Min/Max label', 'CELL TEMP MIN/MAX', 'label_entity_cell_temp'),
-      labelRow('label_bms_temp',         'BMS Temp label',          'BMS TEMP',          'label_entity_bms_temp'),
       labelRow('label_endurance',        'Endurance label',         'ENDURANCE',         'label_entity_endurance'),
-      labelRow('label_min_cell',         'Min Cell label',          'Min Cell',          'label_entity_min_cell'),
-      labelRow('label_max_cell',         'Max Cell label',          'Max Cell',          'label_entity_max_cell'),
       labelRow('label_batt_dis',         'Batt Dis label',          'Batt Dis.',         'label_entity_batt_dis'),
       labelRow('label_endu_eta',         'Endu ETA label',          'Endu ETA',          'label_entity_endu_eta'),
     ]));
@@ -481,11 +477,6 @@ class KFlowCardEditor extends HTMLElement {
       picker('battery_power',    'Battery Power'),
       picker('battery_current',  'Battery Current'),
       pickerMaybeDisabled('battery_voltage',  'Battery Voltage',    labelsEnabled),
-      pickerMaybeDisabled('battery_temp1',    'Temp 1',             labelsEnabled),
-      pickerMaybeDisabled('battery_temp2',    'Temp 2',             labelsEnabled),
-      pickerMaybeDisabled('battery_mos',      'BMS Temp',           labelsEnabled),
-      pickerMaybeDisabled('battery_min_cell', 'Min Cell Voltage',   labelsEnabled),
-      pickerMaybeDisabled('battery_max_cell', 'Max Cell Voltage',   labelsEnabled),
       pickerMaybeDisabled('batt_dis',         'Discharge Today',    labelsEnabled),
       divider(),
       picker('goodwe_battery_soc',  'Fallback SOC',     true),
@@ -534,11 +525,6 @@ class KFlowCard extends HTMLElement {
       battery_power: 'sensor.jk_power',
       battery_current: 'sensor.jk_current',
       battery_voltage: 'sensor.jk_voltage',
-      battery_temp1: 'sensor.jk_temp1',
-      battery_temp2: 'sensor.jk_temp2',
-      battery_mos: 'sensor.jk_mos',
-      battery_min_cell: 'sensor.jk_cellmin',
-      battery_max_cell: 'sensor.jk_cellmax',
       goodwe_battery_soc: 'sensor.goodwe_battery_state_of_charge',
       goodwe_battery_curr: 'sensor.goodwe_battery_current',
       batt_dis: 'sensor.goodwe_today_battery_discharge',
@@ -548,18 +534,10 @@ class KFlowCard extends HTMLElement {
       pv_max_power: 7500,
       sun: 'sun.sun',
       inverter_name: '',
-      label_cell_temp_minmax: 'CELL TEMP MIN/MAX',
-      label_bms_temp: 'BMS TEMP',
       label_endurance: 'ENDURANCE',
-      label_min_cell: 'Min Cell',
-      label_max_cell: 'Max Cell',
       label_batt_dis: 'Batt Dis.',
       label_endu_eta: 'Battery Volt',
-      label_entity_cell_temp: '',
-      label_entity_bms_temp: '',
       label_entity_endurance: '',
-      label_entity_min_cell: '',
-      label_entity_max_cell: '',
       label_entity_batt_dis: '',
       label_entity_endu_eta: '',
       _labels_custom_entities: false,
@@ -592,9 +570,6 @@ class KFlowCard extends HTMLElement {
   }
 
   _socColor(p) { return p<=25?'#f85149':p<=50?'#f39c4b':p<=75?'#58a6ff':'#4CAF50'; }
-  _cellTempColor(t) { return t<=15?'#58a6ff':t<=35?'#3fb950':t<=45?'#f0883e':'#f85149'; }
-  _cellVoltColor(v) { if(v<=0.001)return'#8b949e'; if(v<3.0)return'#f85149'; if(v<3.1)return'#f39c4b'; if(v<3.4)return'#f4d03f'; if(v<=3.65)return'#3fb950'; return'#f85149'; }
-  _tempColor(t) { return t<=25?'#3fb950':t<=45?'#f0883e':'#f85149'; }
   _remCapColor(p) { return p<=15?'#e34d4c':p<=30?'#f39c4b':p<=55?'#f4d03f':'#2ecc71'; }
   _fmtTime(h) { if(!isFinite(h)||h<=0) return'--';const hh=Math.floor(h),mm=Math.round((h-hh)*60);return hh+'h '+(mm<10?'0':'')+mm+'m'; }
 
@@ -784,14 +759,10 @@ class KFlowCard extends HTMLElement {
         <div style="flex:1;display:flex;align-items:center;gap:4px"><span style="font-size:.42rem;color:#8b949e;letter-spacing:1px;text-transform:uppercase">Pwr</span><div style="flex:1;background:#21262d;border-radius:20px;height:9px;overflow:hidden;position:relative"><div id="pwrBar" style="position:absolute;inset:0;right:auto;width:0%;border-radius:20px;background:#3fb950;transition:width .4s,background .4s"></div></div></div>
       </div>
       <div class="dv"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:5px">
-        <div class="st"><div class="l">${this.config.label_cell_temp_minmax || 'CELL TEMP MIN/MAX'}</div><div class="v" id="bTemp1">-- °C</div></div>
-        <div class="st"><div class="l">${this.config.label_bms_temp || 'BMS TEMP'}</div><div class="v" id="bTemp2">-- °C</div></div>
+      <div style="display:grid;grid-template-columns:1fr;gap:4px;margin-top:5px">
         <div class="st"><div class="l">${this.config.label_endurance || 'ENDURANCE'}</div><div class="v" id="bEndurance">--</div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px">
-        <div class="st"><div class="l">${this.config.label_min_cell || 'Min Cell'}</div><div class="v" id="bMinCell">-- V</div></div>
-        <div class="st"><div class="l">${this.config.label_max_cell || 'Max Cell'}</div><div class="v" id="bMaxCell">-- V</div></div>
+      <div style="display:grid;grid-template-columns:1fr;gap:4px;margin-top:4px">
         <div class="st"><div class="l">${this.config.label_batt_dis || 'Batt Dis.'}</div><div class="v" id="bBattDis">-- kWh</div></div>
       </div>
       <div class="dv"></div>
@@ -831,11 +802,6 @@ class KFlowCard extends HTMLElement {
     let battCurr1 = this._val(this.config.battery_current) || this._val(this.config.goodwe_battery_curr) || 0;
     if (this.config.invert_battery_power) battCurr1 = -battCurr1;
     const battVolt1 = this._val(this.config.battery_voltage) || 0;
-    const temp1_1 = this._val(this.config.battery_temp1) || 0;
-    const temp2_1 = this._val(this.config.battery_temp2) || 0;
-    const mos1 = this._val(this.config.battery_mos) || 0;
-    const minCell1 = this._val(this.config.battery_min_cell) || 0;
-    const maxCell1 = this._val(this.config.battery_max_cell) || 0;
     const battDis1 = this._val(this.config.batt_dis) || 0;
 
     // System limits – direct numbers
@@ -931,17 +897,7 @@ class KFlowCard extends HTMLElement {
     setText('battPwrFlow', absPwr1.toFixed(0) + ' W');
     setText('battCurrFlow', battCurr1.toFixed(1) + ' A');
     const bolt = getEl('battBoltGroup'); if (bolt) bolt.setAttribute('opacity', (battPwr1 > 10 && absPwr1 >= 10) ? '1' : '0');
-    setText('bTemp1', temp1_1.toFixed(1) + ' / ' + temp2_1.toFixed(1) + ' °C');
-    setText('bTemp2', mos1.toFixed(1) + ' °C');
-    setText('bMinCell', minCell1.toFixed(3) + ' V');
-    setText('bMaxCell', maxCell1.toFixed(3) + ' V');
     setText('bBattDis', battDis1 + ' kWh');
-
-    // Color: cell temp and cell voltage tiles
-    const _bT1 = getEl('bTemp1'); if (_bT1) _bT1.style.color = this._cellTempColor(Math.max(temp1_1, temp2_1));
-    const _bT2 = getEl('bTemp2'); if (_bT2) _bT2.style.color = this._cellTempColor(mos1);
-    const _bMn = getEl('bMinCell'); if (_bMn) _bMn.style.color = this._cellVoltColor(minCell1);
-    const _bMx = getEl('bMaxCell'); if (_bMx) _bMx.style.color = this._cellVoltColor(maxCell1);
 
     // Endurance
     let endText = '--', endColor = '#8b949e';
