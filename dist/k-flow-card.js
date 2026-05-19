@@ -614,7 +614,7 @@ class KFlowCard extends HTMLElement {
   }
 
   _buildPvWaveHTML(bx,by,pvT){
-    if(pvT<=10)return'';const fl=this._flowLevel(pvT,'solar');const sY=by+7;const pD='M '+bx.toFixed(1)+','+sY.toFixed(1)+' C '+bx.toFixed(1)+',85 260,5 260,127';const col='rgba(255,232,60,.95)',gc='rgba(255,190,20,.55)';const dD=(fl.dur*.8).toFixed(2),dL=(8+fl.size*1.5).toFixed(1),gL=(6+fl.size*1.2).toFixed(1),dT=(parseFloat(dL)+parseFloat(gL)).toFixed(1);let h='';h+='<path d="'+pD+'" fill="none" stroke="'+gc+'" stroke-width="6" stroke-dasharray="'+dL+' '+gL+'" stroke-linecap="round" opacity="0.25" filter="url(#arcSunF2)"><animate attributeName="stroke-dashoffset" from="'+dT+'" to="0" dur="'+dD+'s" repeatCount="indefinite" calcMode="linear"/></path>';h+='<path d="'+pD+'" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-dasharray="'+dL+' '+gL+'" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="'+dT+'" to="0" dur="'+dD+'s" repeatCount="indefinite" calcMode="linear"/></path>';h+='<path d="'+pD+'" fill="none" stroke="'+col+'" stroke-width="1.0" stroke-dasharray="'+dL+' '+gL+'" stroke-linecap="round" opacity="0.85"><animate attributeName="stroke-dashoffset" from="'+dT+'" to="0" dur="'+dD+'s" repeatCount="indefinite" calcMode="linear"/></path>';const wD=[{amp:6,dur:fl.dur*.9,ox:0,op:.9,sc:'rgba(255,255,255,0.92)',dLen:'3.0',dGap:'40.0'},{amp:10,dur:fl.dur*1.1,ox:3,op:.6,sc:col,dLen:'4.5',dGap:'50.0'}];const wc=Math.min(2,Math.max(1,Math.round(fl.count/5)));for(let wi=0;wi<wc;wi++){const w=wD[wi];const sC=Math.round(fl.count*.5),sD=w.dur.toFixed(2),sCy=(parseFloat(w.dLen)+parseFloat(w.dGap)).toFixed(1);for(let si=0;si<sC;si++){const fr=si/sC,ph=fr*Math.PI*2,sY2=(w.amp*Math.sin(ph+wi*1.1)).toFixed(1),sX=(w.ox+w.amp*.3*Math.cos(ph*.5)).toFixed(1),sDe=(fr*w.dur%w.dur).toFixed(3),sO=(w.op*(.5+.5*Math.abs(Math.sin(ph)))*.6).toFixed(2);h+='<g transform="translate('+sX+','+sY2+')"><path d="'+pD+'" fill="none" stroke="'+w.sc+'" stroke-width="1.2" stroke-dasharray="'+w.dLen+' '+w.dGap+'" stroke-linecap="round" opacity="'+sO+'"><animate attributeName="stroke-dashoffset" from="'+sCy+'" to="0" dur="'+sD+'s" begin="-'+sDe+'s" repeatCount="indefinite" calcMode="linear"/></path></g>';}}return h;
+    if(pvT<=10)return'';const fl=this._flowLevel(pvT,'solar');const pvEndY=this._flowLayout?.pvEndY??127;const sY=by+7;const pD='M '+bx.toFixed(1)+','+sY.toFixed(1)+' C '+bx.toFixed(1)+',85 260,5 260,'+pvEndY;const col='rgba(255,232,60,.95)',gc='rgba(255,190,20,.55)';const dD=(fl.dur*.8).toFixed(2),dL=(8+fl.size*1.5).toFixed(1),gL=(6+fl.size*1.2).toFixed(1),dT=(parseFloat(dL)+parseFloat(gL)).toFixed(1);let h='';h+='<path d="'+pD+'" fill="none" stroke="'+gc+'" stroke-width="6" stroke-dasharray="'+dL+' '+gL+'" stroke-linecap="round" opacity="0.25" filter="url(#arcSunF2)"><animate attributeName="stroke-dashoffset" from="'+dT+'" to="0" dur="'+dD+'s" repeatCount="indefinite" calcMode="linear"/></path>';h+='<path d="'+pD+'" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-dasharray="'+dL+' '+gL+'" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="'+dT+'" to="0" dur="'+dD+'s" repeatCount="indefinite" calcMode="linear"/></path>';h+='<path d="'+pD+'" fill="none" stroke="'+col+'" stroke-width="1.0" stroke-dasharray="'+dL+' '+gL+'" stroke-linecap="round" opacity="0.85"><animate attributeName="stroke-dashoffset" from="'+dT+'" to="0" dur="'+dD+'s" repeatCount="indefinite" calcMode="linear"/></path>';const wD=[{amp:6,dur:fl.dur*.9,ox:0,op:.9,sc:'rgba(255,255,255,0.92)',dLen:'3.0',dGap:'40.0'},{amp:10,dur:fl.dur*1.1,ox:3,op:.6,sc:col,dLen:'4.5',dGap:'50.0'}];const wc=Math.min(2,Math.max(1,Math.round(fl.count/5)));for(let wi=0;wi<wc;wi++){const w=wD[wi];const sC=Math.round(fl.count*.5),sD=w.dur.toFixed(2),sCy=(parseFloat(w.dLen)+parseFloat(w.dGap)).toFixed(1);for(let si=0;si<sC;si++){const fr=si/sC,ph=fr*Math.PI*2,sY2=(w.amp*Math.sin(ph+wi*1.1)).toFixed(1),sX=(w.ox+w.amp*.3*Math.cos(ph*.5)).toFixed(1),sDe=(fr*w.dur%w.dur).toFixed(3),sO=(w.op*(.5+.5*Math.abs(Math.sin(ph)))*.6).toFixed(2);h+='<g transform="translate('+sX+','+sY2+')"><path d="'+pD+'" fill="none" stroke="'+w.sc+'" stroke-width="1.2" stroke-dasharray="'+w.dLen+' '+w.dGap+'" stroke-linecap="round" opacity="'+sO+'"><animate attributeName="stroke-dashoffset" from="'+sCy+'" to="0" dur="'+sD+'s" begin="-'+sDe+'s" repeatCount="indefinite" calcMode="linear"/></path></g>';}}return h;
   }
 
   _buildStaticSVG() {
@@ -622,13 +622,14 @@ class KFlowCard extends HTMLElement {
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
     // Topology: Sun→PV→Inverter→Gateway←Grid ; Gateway→Home ; Battery→Gateway
     const GW_X = 260;
-    const GW_Y = 356;
+    const GW_Y = 400;
     const INV_BUS_X = 260;
-    const INV_BUS_Y = 288;
-    const PV_ICON_Y = 127;
-    const INV_ICON_CY = 235;
+    const INV_BUS_Y = 355;
+    const PV_ICON_Y = 105;
+    const INV_ICON_CY = 289;
     const HOME_BUS_X = 260;
-    const HOME_BUS_Y = 386;
+    const HOME_BUS_Y = 430;
+    this._flowLayout = { pvEndY: PV_ICON_Y };
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
     const battText = `
@@ -692,7 +693,7 @@ class KFlowCard extends HTMLElement {
     </style>
     <div style="background:#161b22;border:1px solid #21262d;border-radius:12px;padding:13px;box-shadow:0 4px 20px rgba(0,0,0,.4);width:100%;box-sizing:border-box;">
       <div class="ct">⚡ Energy Flow <span id="battStatusBadge" style="margin-left:auto;font-size:.5rem;font-weight:700;letter-spacing:1.5px;padding:1px 8px;border-radius:8px;background:#21262d;color:#8b949e;text-transform:uppercase">IDLE</span></div>
-      <div style="width:100%;max-width:520px;margin:0 auto"><svg id="flowSvg" viewBox="0 0 520 530" style="width:100%;display:block">
+      <div style="width:100%;max-width:520px;margin:0 auto"><svg id="flowSvg" viewBox="0 0 520 580" style="width:100%;display:block">
       <defs>
         <filter id="arcSunF" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="7"/></filter>
         <filter id="arcSunF2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3"/></filter>
@@ -763,14 +764,14 @@ class KFlowCard extends HTMLElement {
 
       <g id="pvArrayIconImg" transform="translate(205,${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
       <g id="inverterIconImg" transform="translate(260,${INV_ICON_CY}) rotate(-90) translate(-50,-39)" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="100" height="78" preserveAspectRatio="xMidYMid meet"/></g>
-      <text id="invNameLabel" x="260" y="280" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
-      <text id="invLoadPctFlow" x="260" y="296" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
+      <text id="invNameLabel" x="260" y="348" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
+      <text id="invLoadPctFlow" x="260" y="364" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
 
       <text id="pv1label" x="8" y="360" font-size="9" fill="#8b949e" letter-spacing="1">PV1</text>
       <text id="pv1FlowVal" x="8" y="374" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>
 
-      <g id="homeIconImg" transform="translate(179,367)" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
-      <text id="fcLoadVal" x="174" y="448" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
+      <g id="homeIconImg" transform="translate(179,411)" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
+      <text id="fcLoadVal" x="174" y="492" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
       </svg></div>`+
 
       `<div style="display:flex;gap:8px;align-items:center;margin-top:10px">
