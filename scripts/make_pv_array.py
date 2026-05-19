@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Generate a realistic multi-panel PV array icon for the flow diagram.
 
-Background matches the card/SVG area (#161b22 in k-flow-card.js).
+Renders on a transparent canvas so Home Assistant does not show a solid
+background box or rectangular SVG glow around the asset.
 """
 from __future__ import annotations
 
@@ -11,13 +12,10 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
 SCALE = 2  # supersample for smoother edges, downscale on save
-W, H = 860 * SCALE, 637 * SCALE
-OUT = Path(__file__).resolve().parent.parent / "dist" / "pv-array.png"
+OUT = Path(__file__).resolve().parent.parent / "dist" / "pv-icon.png"
 MAX_WIDTH = 860  # cap after trim; height follows aspect ratio
-TRIM_PAD = 20
-
-# Same as Energy Flow card shell background (SVG sits on this in k-flow-card.js)
-SVG_BACKGROUND = (22, 27, 34, 255)  # #161b22
+TRIM_PAD = 6
+CANVAS_PAD = 28 * SCALE  # margin around panel cluster (scaled coordinates)
 
 
 def lerp(a: float, b: float, t: float) -> float:
@@ -28,40 +26,62 @@ def lerp_color(c1: tuple[int, ...], c2: tuple[int, ...], t: float) -> tuple[int,
     return tuple(int(lerp(c1[i], c2[i], t)) for i in range(len(c1)))
 
 
-def trim_to_content(img: Image.Image, pad: int = TRIM_PAD, bg: tuple[int, ...] = SVG_BACKGROUND) -> Image.Image:
-    """Crop to panel content; treat background-colored pixels as empty."""
-    r, g, b, _ = bg
-    px = img.load()
-    w, h = img.size
-    min_x, min_y, max_x, max_y = w, h, 0, 0
-    found = False
-    for y in range(h):
-        for x in range(w):
-            pr, pg, pb, pa = px[x, y]
-            if pa < 16:
-                continue
-            # Ignore pixels that are still flat background
-            if abs(pr - r) <= 2 and abs(pg - g) <= 2 and abs(pb - b) <= 2:
-                continue
-            found = True
-            min_x = min(min_x, x)
-            min_y = min(min_y, y)
-            max_x = max(max_x, x)
-            max_y = max(max_y, y)
-    if not found:
+def trim_alpha(img: Image.Image, pad: int = TRIM_PAD) -> Image.Image:
+    """Crop to non-transparent pixels."""
+    alpha = img.split()[3]
+    bbox = alpha.getbbox()
+    if not bbox:
         return img
-    x0 = max(0, min_x - pad)
-    y0 = max(0, min_y - pad)
-    x1 = min(w, max_x + 1 + pad)
-    y1 = min(h, max_y + 1 + pad)
-    return img.crop((x0, y0, x1, y1))
+    x0, y0, x1, y1 = bbox
+    return img.crop((
+        max(0, x0 - pad),
+        max(0, y0 - pad),
+        min(img.width, x1 + pad),
+        min(img.height, y1 + pad),
+    ))
 
 
-def draw_soft_shadow(base: Image.Image, cx: int, cy: int, rx: int, ry: int, alpha: int = 55) -> None:
-    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+def panel_cluster_bbox(
+    origin_x: int,
+    origin_y: int,
+    step_x: int,
+    step_y: int,
+    panel_w: int,
+    panel_h: int,
+    tilt: int,
+    rows: int = 3,
+    cols: int = 3,
+) -> tuple[int, int, int, int]:
+    """Axis-aligned bounds for the 3×3 panel array (scaled coordinates)."""
+    skew = int(panel_h * 0.06)
+    margin_x = panel_w // 2 + tilt + 12
+    margin_y = panel_h // 2 + skew + 22
+    min_x = min_y = 10**9
+    max_x = max_y = 0
+    for row in range(rows):
+        for col in range(cols):
+            cx = origin_x + col * step_x + row * 36
+            cy = origin_y + row * step_y + col * 18
+            min_x = min(min_x, cx - margin_x)
+            min_y = min(min_y, cy - margin_y)
+            max_x = max(max_x, cx + margin_x)
+            max_y = max(max_y, cy + margin_y)
+    return min_x, min_y, max_x, max_y
+
+
+def draw_soft_shadow(
+    base: Image.Image,
+    cx: int,
+    cy: int,
+    rx: int,
+    ry: int,
+    alpha: int = 55,
+) -> None:
+    w, h = base.size
+    shadow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
     sd.ellipse((cx - rx, cy - ry, cx + rx, cy + ry), fill=(0, 0, 0, alpha))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=max(8, rx // 12)))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=max(6, rx // 14)))
     base.alpha_composite(shadow)
 
 
@@ -260,30 +280,46 @@ def draw_overlap_shadow(shadow_draw: ImageDraw.ImageDraw, front_face: list[tuple
 
 
 def main() -> None:
-    img = Image.new("RGBA", (W, H), SVG_BACKGROUND)
-
-    # Ground shadow under entire array
-    draw_soft_shadow(img, W // 2 + 20, H - 42, 320, 38, alpha=50)
-
     panel_w, panel_h = 200 * SCALE, 118 * SCALE
     tilt = 14 * SCALE
     step_x, step_y = 168 * SCALE, 72 * SCALE
     origin_x, origin_y = 118 * SCALE, 108 * SCALE
 
+    bx0, by0, bx1, by1 = panel_cluster_bbox(
+        origin_x, origin_y, step_x, step_y, panel_w, panel_h, tilt
+    )
+    w = bx1 - bx0 + CANVAS_PAD * 2
+    h = by1 - by0 + CANVAS_PAD * 2
+    offset_x = CANVAS_PAD - bx0
+    offset_y = CANVAS_PAD - by0
+
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+
+    shadow_cx = (bx0 + bx1) // 2 + offset_x
+    shadow_cy = by1 + offset_y + int(8 * SCALE)
+    draw_soft_shadow(
+        img,
+        shadow_cx,
+        shadow_cy,
+        int((bx1 - bx0) * 0.42),
+        int(14 * SCALE),
+        alpha=42,
+    )
+
     panels: list[tuple[float, int, int, int]] = []
     for row in range(3):
         for col in range(3):
-            cx = origin_x + col * step_x + row * 36
-            cy = origin_y + row * step_y + col * 18
+            cx = origin_x + col * step_x + row * 36 + offset_x
+            cy = origin_y + row * step_y + col * 18 + offset_y
             depth = row + col + (col * 0.1)
             panels.append((depth, cx, cy, row))
 
     panels.sort(key=lambda p: p[0])
 
     draw = ImageDraw.Draw(img)
-    glare = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    glare = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     glare_draw = ImageDraw.Draw(glare)
-    overlap_shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    overlap_shadow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     overlap_draw = ImageDraw.Draw(overlap_shadow)
 
     faces: list[list[tuple[int, int]]] = []
@@ -301,9 +337,8 @@ def main() -> None:
     img = Image.alpha_composite(img, overlap_shadow)
     img = Image.alpha_composite(img, glare)
 
-    # Downscale from supersampled render, then trim empty transparent margins
     img = img.resize((img.width // SCALE, img.height // SCALE), Image.Resampling.LANCZOS)
-    img = trim_to_content(img)
+    img = trim_alpha(img)
 
     if img.width > MAX_WIDTH:
         ratio = MAX_WIDTH / img.width
@@ -314,7 +349,7 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT, "PNG", optimize=True)
-    print(f"Wrote {OUT} ({img.width}x{img.height}, background #161b22)")
+    print(f"Wrote {OUT} ({img.width}x{img.height}, transparent background)")
 
 
 if __name__ == "__main__":

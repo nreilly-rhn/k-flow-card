@@ -628,8 +628,10 @@ class KFlowCard extends HTMLElement {
     const INV_BUS_X = 260;
     const INV_BUS_Y = 300;
     const PV_ICON_Y = 105;
+    const PV_ICON_W = 110;
+    const PV_ICON_H = 61;  // matches pv-icon.png aspect; transparent PNG — no square letterbox
     const PV_BUS_X = 260;
-    const PV_BUS_Y = PV_ICON_Y + 110;
+    const PV_BUS_Y = PV_ICON_Y + PV_ICON_H;
     const INV_ICON_CY = 261;
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = 475;
@@ -775,7 +777,7 @@ class KFlowCard extends HTMLElement {
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="pvArrayIconImg" transform="translate(205,${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="pvArrayIconImg" transform="translate(${260 - PV_ICON_W / 2},${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="${PV_ICON_W}" height="${PV_ICON_H}" preserveAspectRatio="xMidYMid meet"/></g>
       <g id="inverterIconImg" transform="translate(260,${INV_ICON_CY}) rotate(-90) translate(-50,-39)" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="100" height="78" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="320" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
       <text id="invLoadPctFlow" x="260" y="336" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
@@ -946,7 +948,10 @@ class KFlowCard extends HTMLElement {
     const pvImg = getEl('pvArrayIconImg');
     if (pvImg) {
       pvImg.style.opacity = showPvInv ? '1' : '0.65';
-      pvImg.setAttribute('filter', showPvInv && invPwr >= 50 ? 'url(#iconGlowYellow)' : '');
+      pvImg.removeAttribute('filter');
+      pvImg.style.filter = (showPvInv && invPwr >= 50)
+        ? 'drop-shadow(0 0 4px rgba(255,220,60,0.95)) drop-shadow(0 0 10px rgba(255,175,20,0.45))'
+        : 'none';
     }
     const invImg = getEl('inverterIconImg');
     if (invImg) {
