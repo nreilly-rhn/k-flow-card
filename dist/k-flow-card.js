@@ -622,13 +622,13 @@ class KFlowCard extends HTMLElement {
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
     // Topology: Sun→PV→Inverter→Gateway←Grid ; Gateway→Home ; Battery→Gateway
     const GW_X = 260;
-    const GW_Y = 328;
+    const GW_Y = 356;
     const INV_BUS_X = 260;
     const INV_BUS_Y = 288;
     const PV_ICON_Y = 127;
     const INV_ICON_CY = 235;
     const HOME_BUS_X = 260;
-    const HOME_BUS_Y = 358;
+    const HOME_BUS_Y = 386;
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
     const battText = `
@@ -692,7 +692,7 @@ class KFlowCard extends HTMLElement {
     </style>
     <div style="background:#161b22;border:1px solid #21262d;border-radius:12px;padding:13px;box-shadow:0 4px 20px rgba(0,0,0,.4);width:100%;box-sizing:border-box;">
       <div class="ct">⚡ Energy Flow <span id="battStatusBadge" style="margin-left:auto;font-size:.5rem;font-weight:700;letter-spacing:1.5px;padding:1px 8px;border-radius:8px;background:#21262d;color:#8b949e;text-transform:uppercase">IDLE</span></div>
-      <div style="width:100%;max-width:520px;margin:0 auto"><svg id="flowSvg" viewBox="0 0 520 470" style="width:100%;display:block">
+      <div style="width:100%;max-width:520px;margin:0 auto"><svg id="flowSvg" viewBox="0 0 520 530" style="width:100%;display:block">
       <defs>
         <filter id="arcSunF" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="7"/></filter>
         <filter id="arcSunF2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3"/></filter>
@@ -769,8 +769,8 @@ class KFlowCard extends HTMLElement {
       <text id="pv1label" x="8" y="360" font-size="9" fill="#8b949e" letter-spacing="1">PV1</text>
       <text id="pv1FlowVal" x="8" y="374" font-size="12" font-weight="700" fill="#ffe83c">-- W</text>
 
-      <g id="homeIconImg" transform="translate(179,339)" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
-      <text id="fcLoadVal" x="174" y="420" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
+      <g id="homeIconImg" transform="translate(179,367)" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
+      <text id="fcLoadVal" x="174" y="448" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
       </svg></div>`+
 
       `<div style="display:flex;gap:8px;align-items:center;margin-top:10px">
