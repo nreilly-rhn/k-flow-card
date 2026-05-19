@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 SCALE = 2  # supersample for smoother edges, downscale on save
 W, H = 860 * SCALE, 637 * SCALE
-OUT = Path(__file__).resolve().parent.parent / "dist" / "pv-icon.png"
+OUT = Path(__file__).resolve().parent.parent / "dist" / "pv-array.png"
 MAX_WIDTH = 860  # cap after trim; height follows aspect ratio
 TRIM_PAD = 20
 
