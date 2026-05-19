@@ -451,6 +451,7 @@ class KFlowCardEditor extends HTMLElement {
 
     shell.appendChild(makeSection('solar', '☀️', 'Solar', [
       picker('pv1_power', 'PV1 Power'),
+      numberField('pv_icon_glow', 'PV icon glow size', 0, 24, 1, 'px'),
     ]));
 
     shell.appendChild(makeSection('solar_extras', '☀️', 'Solar Extras', [
@@ -533,6 +534,7 @@ class KFlowCard extends HTMLElement {
       battery_full_wh: 16076,
       inverter_max_power: 6000,
       pv_max_power: 7500,
+      pv_icon_glow: 5,
       sun: 'sun.sun',
       inverter_name: '',
       inverter_power: '',
@@ -608,6 +610,17 @@ class KFlowCard extends HTMLElement {
     const ft=145,fb=263,fh=118;const fH=Math.round((soc||0)/100*fh),fY=fb-fH;let c,f,tc;
     if(soc<=20){c='#ff2200';f='url(#battGlowRed)';tc='#000';}else if(soc<=40){c='#f4d03f';f='url(#battGlowOrange)';tc='#000';}else if(soc<=75){c='#44ff00';f='url(#battGlowGreen)';tc='#fff';}else{c='#00d4ff';f='url(#battGlowCyan)';tc='#fff';}
     return{y:fY,height:fH,color:c,filter:fH>4?f:'none',textColor:tc};
+  }
+
+  _pvGlowFilter() {
+    const px = Number(this.config.pv_icon_glow);
+    const size = Number.isFinite(px) ? px : 5;
+    if (size <= 0) return 'none';
+    const inner = Math.max(1, size * 0.5).toFixed(1);
+    const outer = Math.max(2, size * 1.25).toFixed(1);
+    const innerA = Math.min(0.95, 0.45 + size * 0.05).toFixed(2);
+    const outerA = Math.min(0.5, 0.12 + size * 0.028).toFixed(2);
+    return `drop-shadow(0 0 ${inner}px rgba(255,220,60,${innerA})) drop-shadow(0 0 ${outer}px rgba(255,175,20,${outerA}))`;
   }
 
   _flowLevel(w,type){
@@ -777,7 +790,7 @@ class KFlowCard extends HTMLElement {
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="pvArrayIconImg" transform="translate(${260 - PV_ICON_W / 2},${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="${PV_ICON_W}" height="${PV_ICON_H}" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="pvArrayIconImg" transform="translate(${260 - PV_ICON_W / 2},${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="${PV_ICON_W}" height="${PV_ICON_H}"/></g>
       <g id="inverterIconImg" transform="translate(260,${INV_ICON_CY}) rotate(-90) translate(-50,-39)" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="100" height="78" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="320" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
       <text id="invLoadPctFlow" x="260" y="336" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
@@ -949,9 +962,7 @@ class KFlowCard extends HTMLElement {
     if (pvImg) {
       pvImg.style.opacity = showPvInv ? '1' : '0.65';
       pvImg.removeAttribute('filter');
-      pvImg.style.filter = (showPvInv && invPwr >= 50)
-        ? 'drop-shadow(0 0 4px rgba(255,220,60,0.95)) drop-shadow(0 0 10px rgba(255,175,20,0.45))'
-        : 'none';
+      pvImg.style.filter = (showPvInv && invPwr >= 50) ? this._pvGlowFilter() : 'none';
     }
     const invImg = getEl('inverterIconImg');
     if (invImg) {
