@@ -534,7 +534,7 @@ class KFlowCard extends HTMLElement {
       battery_full_wh: 16076,
       inverter_max_power: 6000,
       pv_max_power: 7500,
-      pv_icon_glow: 5,
+      pv_icon_glow: 0,
       sun: 'sun.sun',
       inverter_name: '',
       inverter_power: '',
