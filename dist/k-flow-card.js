@@ -743,7 +743,7 @@ class KFlowCard extends HTMLElement {
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="pvArrayIconImg" transform="translate(205,155)" style="opacity:1"><image href="${iconPath}/pv-array.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="pvArrayIconImg" transform="translate(205,155)" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="203" text-anchor="middle" font-size="14" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
       <text id="invLoadPctFlow" x="260" y="240" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
 
