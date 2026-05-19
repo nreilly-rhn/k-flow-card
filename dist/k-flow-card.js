@@ -620,6 +620,13 @@ class KFlowCard extends HTMLElement {
   _buildStaticSVG() {
     const showBatt1 = !!(this.config._show_battery !== false);
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
+    // Gateway hub between battery, grid, and home load
+    const GW_X = 230;
+    const GW_Y = 200;
+    const INV_BUS_X = 260;
+    const INV_BUS_Y = 265;
+    const HOME_BUS_X = 260;
+    const HOME_BUS_Y = 358;
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
     const battText = `
@@ -634,11 +641,17 @@ class KFlowCard extends HTMLElement {
 
     // Battery visibility helpers
     const battGhostPath = showBatt1
-      ? `<path d="M 59,175 H 132 V 205 H 205" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`
+      ? `<path d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`
       : '';
     const battFlowPaths = showBatt1 ? `
-      <path id="flowBattIn" d="M 59,175 H 132 V 205 H 205" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
-      <path id="flowBattOut" d="M 59,175 H 132 V 205 H 205" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
+      <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+      <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
+    const gwGhostPath = `
+      <path d="M ${GW_X},${GW_Y} H ${HOME_BUS_X} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+      <path d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`;
+    const gwFlowPaths = `
+      <path id="flowGwHomeIn" d="M ${GW_X},${GW_Y} H ${HOME_BUS_X} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+      <path id="flowGwHomeOut" d="M ${GW_X},${GW_Y} H ${HOME_BUS_X} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
     const battIconSection = !showBatt1 ? '' : (
       `<g transform="translate(-36.6, 25.4) scale(0.8)">
         <g id="battIconWrap">
@@ -723,27 +736,30 @@ class KFlowCard extends HTMLElement {
       <g id="pvFlowGroup"></g>
 
       ${battGhostPath}
-      <path d="M 399,175 H 361 V 202 H 315" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
-      <path d="M 260,265 V 358" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      ${gwGhostPath}
+      <path d="M ${INV_BUS_X},${INV_BUS_Y} V 358" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
 
-      <path id="flowGridIn" d="M 432,175 H 361 V 202 H 315" fill="none" stroke="#FF2929" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
-      <path id="flowGridOut" d="M 432,175 H 361 V 202 H 315" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
+      <path id="flowGridIn" d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#FF2929" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
+      <path id="flowGridOut" d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
 
       ${battFlowPaths}
+      ${gwFlowPaths}
 
-      <path id="flowInvLoad" d="M 260,358 V 265" fill="none" stroke="#29c4f6" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
+      <path id="flowInvLoad" d="M ${INV_BUS_X},358 V ${INV_BUS_Y}" fill="none" stroke="#29c4f6" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
 
       <!-- Battery current/power placed above/below flow bar -->
       ${showBatt1 ? battText : ''}
 
       ${battIconSection}
 
+      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/powerwall-gateway-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
+
       <g id="gridIconImg" transform="translate(399,133)" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="121" height="121" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="fcGridVal" x="445" y="269" text-anchor="middle" font-size="13" font-weight="700" fill="#e05c00">-- W</text>
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="pvArrayIconImg" transform="translate(205,155)" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="pvArrayIconImg" transform="translate(205,155)" style="opacity:1"><image href="${iconPath}/pv-array.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="203" text-anchor="middle" font-size="14" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
       <text id="invLoadPctFlow" x="260" y="240" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
 
@@ -759,10 +775,14 @@ class KFlowCard extends HTMLElement {
         <div style="flex:1;display:flex;align-items:center;gap:4px"><span style="font-size:.42rem;color:#8b949e;letter-spacing:1px;text-transform:uppercase">Pwr</span><div style="flex:1;background:#21262d;border-radius:20px;height:9px;overflow:hidden;position:relative"><div id="pwrBar" style="position:absolute;inset:0;right:auto;width:0%;border-radius:20px;background:#3fb950;transition:width .4s,background .4s"></div></div></div>
       </div>
       <div class="dv"></div>
-      <div style="display:grid;grid-template-columns:1fr;gap:4px;margin-top:5px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:5px">
+        <div class="st"><div class="l">${this.config.label_cell_temp_minmax || 'CELL TEMP MIN/MAX'}</div><div class="v" id="bTemp1">-- °C</div></div>
+        <div class="st"><div class="l">${this.config.label_bms_temp || 'BMS TEMP'}</div><div class="v" id="bTemp2">-- °C</div></div>
         <div class="st"><div class="l">${this.config.label_endurance || 'ENDURANCE'}</div><div class="v" id="bEndurance">--</div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr;gap:4px;margin-top:4px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px">
+        <div class="st"><div class="l">${this.config.label_min_cell || 'Min Cell'}</div><div class="v" id="bMinCell">-- V</div></div>
+        <div class="st"><div class="l">${this.config.label_max_cell || 'Max Cell'}</div><div class="v" id="bMaxCell">-- V</div></div>
         <div class="st"><div class="l">${this.config.label_batt_dis || 'Batt Dis.'}</div><div class="v" id="bBattDis">-- kWh</div></div>
       </div>
       <div class="dv"></div>
@@ -862,6 +882,20 @@ class KFlowCard extends HTMLElement {
     setFlow('flowGridIn', gridActive > 10, gridActive, flowDur(gridActive), '#FF2929');
     setFlow('flowGridOut', gridActive < -10, Math.abs(gridActive), flowDur(Math.abs(gridActive)), '#2ecc71');
 
+    // Gateway ↔ home (battery/grid hub to load)
+    const showGwHome = absPwr1 >= 10 || Math.abs(gridActive) >= 10;
+    const gwHomeOut = battPwr1 < -10 || gridActive < -10;
+    let gwHomeColor = '#8b949e';
+    if (showGwHome) {
+      if (absPwr1 >= Math.abs(gridActive) && absPwr1 >= 10) gwHomeColor = battLineColor;
+      else if (gridActive > 10) gwHomeColor = '#FF2929';
+      else if (gridActive < -10) gwHomeColor = '#2ecc71';
+    }
+    const gwHomeW = showGwHome ? Math.max(absPwr1, Math.abs(gridActive)) : 0;
+    const gwHomeDur = flowDur(gwHomeW);
+    setFlow('flowGwHomeIn', showGwHome && !gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
+    setFlow('flowGwHomeOut', showGwHome && gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
+
     // flowInvLoad color — matches the dominant source feeding the home load
     // PV    → #ffe83c  (yellow,  matches PV flow lines)
     // Batt  → #f39c4b / #e67e22 / #f85149  (orange→red, matches battLineColor)
@@ -885,6 +919,11 @@ class KFlowCard extends HTMLElement {
     if (battIconWrap) { battIconWrap.setAttribute('filter', absPwr1 >= 50 ? 'url(#iconGlowBlue)' : ''); }
     const gridImg = getEl('gridIconImg');
     if (gridImg) { gridImg.style.opacity = Math.abs(gridActive) < 10 ? '0.4' : '1'; gridImg.setAttribute('filter', gridActive >= 50 ? 'url(#iconGlowOrange)' : gridActive <= -50 ? 'url(#iconGlowYellow)' : ''); }
+    const gwImg = getEl('gatewayIconImg');
+    if (gwImg) {
+      gwImg.style.opacity = showGwHome ? '1' : '0.55';
+      gwImg.setAttribute('filter', showGwHome && gwHomeW >= 50 ? 'url(#iconGlowBlue)' : '');
+    }
     const homeImg = getEl('homeIconImg');
     if (homeImg) { homeImg.style.opacity = load > 10 ? '1' : '0.7'; homeImg.setAttribute('filter', load > 10 ? 'url(#iconGlowOrange)' : ''); }
 
