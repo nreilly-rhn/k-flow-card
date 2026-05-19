@@ -628,10 +628,8 @@ class KFlowCard extends HTMLElement {
     const INV_BUS_X = 260;
     const INV_BUS_Y = 300;
     const PV_ICON_Y = 105;
-    const PV_ICON_W = 110;
-    const PV_ICON_H = 55;  // matches pv-icon.png aspect (~2:1) — no letterboxing
     const PV_BUS_X = 260;
-    const PV_BUS_Y = PV_ICON_Y + PV_ICON_H;
+    const PV_BUS_Y = PV_ICON_Y + 110;
     const INV_ICON_CY = 261;
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = 475;
@@ -777,7 +775,7 @@ class KFlowCard extends HTMLElement {
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="pvArrayIconImg" transform="translate(${260 - PV_ICON_W / 2},${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="${PV_ICON_W}" height="${PV_ICON_H}" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="pvArrayIconImg" transform="translate(205,${PV_ICON_Y})" style="opacity:1"><image href="${iconPath}/pv-icon.png" x="0" y="0" width="110" height="110" preserveAspectRatio="xMidYMid meet"/></g>
       <g id="inverterIconImg" transform="translate(260,${INV_ICON_CY}) rotate(-90) translate(-50,-39)" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="100" height="78" preserveAspectRatio="xMidYMid meet"/></g>
       <text id="invNameLabel" x="260" y="320" text-anchor="middle" font-size="13" font-weight="800" fill="#f4a93b" letter-spacing="1">INV</text>
       <text id="invLoadPctFlow" x="260" y="336" text-anchor="middle" font-size="12" font-weight="700" fill="#3ce878">--%</text>
