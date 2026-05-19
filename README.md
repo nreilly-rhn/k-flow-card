@@ -98,7 +98,7 @@ The card uses PNG icons automatically served from the install folder:
 | `pv-array.png` | Inverter / PV array |
 | `home-icon.png` | House / load icon |
 | `grid-icon.png` | Grid / utility icon |
-| `powerwall-gateway-icon.png` | Gateway hub (battery + grid ↔ home) |
+| `powerwall-gateway-icon.png` | Gateway hub (PV→inverter→gateway←grid, gateway→home) |
 
 Icons are served from `/local/community/k-flow-card/` for both HACS and manual installs. As long as the files are in the correct folder no extra configuration is required.
 
