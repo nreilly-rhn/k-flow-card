@@ -622,7 +622,7 @@ class KFlowCard extends HTMLElement {
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
     // Topology: Sun→PV→Inverter→Gateway←Grid ; Gateway→Home ; Battery→Gateway
     const GW_X = 260;
-    const GW_Y = 300;
+    const GW_Y = 328;
     const INV_BUS_X = 260;
     const INV_BUS_Y = 288;
     const PV_ICON_Y = 127;
