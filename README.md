@@ -50,12 +50,13 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
    - `home-icon.png`
    - `grid-icon.png`
    - `powerwall-gateway-icon.png`
+   - `fronius-inverter-icon.png`
 
 2. Create the folder `/config/www/community/k-flow-card/` if it does not already exist, and copy all files into it:
 
    ```bash
    mkdir -p /config/www/community/k-flow-card
-   cp k-flow-card.js flow.svg pv-icon.png home-icon.png grid-icon.png powerwall-gateway-icon.png \
+   cp k-flow-card.js flow.svg pv-icon.png home-icon.png grid-icon.png powerwall-gateway-icon.png fronius-inverter-icon.png \
       /config/www/community/k-flow-card/
    ```
 
@@ -95,7 +96,8 @@ The card uses PNG icons automatically served from the install folder:
 
 | File | Used for |
 |---|---|
-| `pv-array.png` | Inverter / PV array |
+| `pv-icon.png` / `pv-array.png` | PV array (solar panels) |
+| `fronius-inverter-icon.png` | Inverter hub on the flow diagram |
 | `home-icon.png` | House / load icon |
 | `grid-icon.png` | Grid / utility icon |
 | `powerwall-gateway-icon.png` | Gateway hub (PV→inverter→gateway←grid, gateway→home) |
