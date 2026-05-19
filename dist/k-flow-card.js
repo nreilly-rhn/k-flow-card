@@ -358,6 +358,7 @@ class KFlowCardEditor extends HTMLElement {
     // ═══ Build sections ═══
     shell.appendChild(makeSection('general', '⚙️', 'General', [
       textField('inverter_name', 'Inverter Name', 'e.g. My Inverter'),
+      picker('inverter_power', 'Inverter Power (PV → inverter flow)', true),
     ]));
 
     // ── Labels section with "Enable custom entities" toggle ──
@@ -534,6 +535,7 @@ class KFlowCard extends HTMLElement {
       pv_max_power: 7500,
       sun: 'sun.sun',
       inverter_name: '',
+      inverter_power: '',
       label_endurance: 'ENDURANCE',
       label_batt_dis: 'Batt Dis.',
       label_endu_eta: 'Battery Volt',
@@ -626,6 +628,8 @@ class KFlowCard extends HTMLElement {
     const INV_BUS_X = 260;
     const INV_BUS_Y = 300;
     const PV_ICON_Y = 105;
+    const PV_BUS_X = 260;
+    const PV_BUS_Y = PV_ICON_Y + 110;
     const INV_ICON_CY = 261;
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = 475;
@@ -651,6 +655,11 @@ class KFlowCard extends HTMLElement {
     const battFlowPaths = showBatt1 ? `
       <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
       <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
+    const pvInvGhostPath = `
+      <path d="M ${PV_BUS_X},${PV_BUS_Y} V ${INV_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`;
+    const pvInvFlowPaths = `
+      <path id="flowPvInvIn" d="M ${PV_BUS_X},${PV_BUS_Y} V ${INV_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+      <path id="flowPvInvOut" d="M ${PV_BUS_X},${PV_BUS_Y} V ${INV_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
     const gwGhostPath = `
       <path d="M ${INV_BUS_X},${INV_BUS_Y} V ${GW_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
       <path d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
@@ -744,12 +753,14 @@ class KFlowCard extends HTMLElement {
       <g id="pvFlowGroup"></g>
 
       ${battGhostPath}
+      ${pvInvGhostPath}
       ${gwGhostPath}
 
       <path id="flowGridIn" d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#FF2929" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
       <path id="flowGridOut" d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
 
       ${battFlowPaths}
+      ${pvInvFlowPaths}
       ${gwFlowPaths}
 
       <!-- Battery current/power placed above/below flow bar -->
@@ -899,6 +910,13 @@ class KFlowCard extends HTMLElement {
       loadFlowColor = absBattOut < 1000 ? '#f39c4b' : absBattOut < 2500 ? '#e67e22' : '#f85149';
     }
 
+    // PV → inverter (inverter_power entity, else total PV)
+    const invPwrRaw = this._val(this.config.inverter_power);
+    const invPwr = (invPwrRaw !== null && !isNaN(invPwrRaw)) ? invPwrRaw : pvTotal;
+    const showPvInv = invPwr > 10;
+    setFlow('flowPvInvIn', showPvInv, invPwr, flowDur(invPwr), '#ffe83c');
+    setFlow('flowPvInvOut', false, 0, flowDur(0), '#ffe83c');
+
     // Inverter → gateway (PV / Sun path through inverter)
     const showInvGw = pvTotal > 10;
     setFlow('flowInvGwIn', showInvGw, pvTotal, flowDur(pvTotal), '#ffe83c');
@@ -925,6 +943,17 @@ class KFlowCard extends HTMLElement {
     if (battIconWrap) { battIconWrap.setAttribute('filter', absPwr1 >= 50 ? 'url(#iconGlowBlue)' : ''); }
     const gridImg = getEl('gridIconImg');
     if (gridImg) { gridImg.style.opacity = Math.abs(gridActive) < 10 ? '0.4' : '1'; gridImg.setAttribute('filter', gridActive >= 50 ? 'url(#iconGlowOrange)' : gridActive <= -50 ? 'url(#iconGlowYellow)' : ''); }
+    const pvImg = getEl('pvArrayIconImg');
+    if (pvImg) {
+      pvImg.style.opacity = showPvInv ? '1' : '0.65';
+      pvImg.setAttribute('filter', showPvInv && invPwr >= 50 ? 'url(#iconGlowYellow)' : '');
+    }
+    const invImg = getEl('inverterIconImg');
+    if (invImg) {
+      const invActive = showPvInv || showInvGw;
+      invImg.style.opacity = invActive ? '1' : '0.55';
+      invImg.setAttribute('filter', invActive && (invPwr >= 50 || pvTotal >= 50) ? 'url(#iconGlowYellow)' : '');
+    }
     const gwImg = getEl('gatewayIconImg');
     if (gwImg) {
       const gwActive = showInvGw || showGwHome;
