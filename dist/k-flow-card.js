@@ -642,7 +642,7 @@ class KFlowCard extends HTMLElement {
     const INV_BUS_Y = 300;
     const PV_ICON_Y = 105;
     const PV_ICON_W = 110;
-    const PV_ICON_H = 61;  // matches pv-icon.png aspect; transparent PNG — no square letterbox
+    const PV_ICON_H = 40;  // matches pv-icon.png aspect; transparent PNG — no square letterbox
     const PV_BUS_X = 260;
     const PV_BUS_Y = PV_ICON_Y + PV_ICON_H;
     const INV_ICON_CY = 261;
