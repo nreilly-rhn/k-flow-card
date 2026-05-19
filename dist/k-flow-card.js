@@ -624,7 +624,7 @@ class KFlowCard extends HTMLElement {
     const GW_X = 260;
     const GW_Y = 400;
     const INV_BUS_X = 260;
-    const INV_BUS_Y = 310;
+    const INV_BUS_Y = 300;
     const PV_ICON_Y = 105;
     const INV_ICON_CY = 261;
     const HOME_BUS_X = 260;
