@@ -659,7 +659,7 @@ class KFlowCard extends HTMLElement {
           <rect x="53" y="145" width="62" height="118" rx="8" fill="#0f1214"/>
             <rect id="battFillBar" x="53" y="263" width="62" height="0" rx="0" fill="#3fb950" clip-path="url(#battBodyClip)"/>
             <rect id="battFillHL" x="53" y="263" width="62" height="0" rx="0" fill="url(#battFillHighlight)" clip-path="url(#battBodyClip)" style="pointer-events:none"/>
-            <g id="battBoltGroup" opacity="0"><polygon points="86,176 74,199 82,199 77,223 93,195 85,195 97,176" fill="#1a4aff" stroke="rgba(100,150,255,.5)" stroke-width="0.8" filter="url(#battGlowBolt)"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.0s" repeatCount="indefinite"/></polygon></g>
+            <g id="battBoltGroup" opacity="0"><polygon points="86,176 74,199 82,199 77,223 93,195 85,195 97,176" fill="#ff1a22" stroke="rgba(100,150,255,.5)" stroke-width="0.8" filter="url(#battGlowBolt)"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.0s" repeatCount="indefinite"/></polygon></g>
             <text id="fcBattVal" x="84" y="211" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">--%</text>
             <text id="battVoltageFlow" x="84" y="285" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">-- V</text>
         </g>
@@ -859,7 +859,7 @@ class KFlowCard extends HTMLElement {
     if (absPwr1 < 10) { battShowIn = false; battShowOut = false; }
     else if (absPwr1 < 50) { battShowIn = showBattIn; battShowOut = showBattOut; battLineColor = '#8b949e'; }
     else { battShowIn = showBattIn; battShowOut = showBattOut; battDur = flowDur(absPwr1);
-      if (isCharging1) battLineColor = '#2b59ff';
+      if (isCharging1) battLineColor = '#2bff32';
       else if (absPwr1 < 1000) battLineColor = '#f39c4b';
       else if (absPwr1 < 2500) battLineColor = '#e67e22';
       else battLineColor = '#f85149'; }
