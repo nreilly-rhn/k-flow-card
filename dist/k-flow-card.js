@@ -619,6 +619,12 @@ class KFlowCard extends HTMLElement {
     // Topology: Sun→Gateway←Grid ; Gateway→Home ; Battery→Gateway
     const GW_X = 260;
     const GW_Y = 250;
+    const GRID_ICON_X = 399;
+    const GRID_ICON_Y = 133;
+    const GRID_ICON_W = 121;
+    const GRID_CONN_X = GRID_ICON_X + 14;
+    const GRID_CONN_Y = GRID_ICON_Y + Math.round(GRID_ICON_W * 0.48);
+    const GRID_PATH_D = `M ${GRID_CONN_X},${GRID_CONN_Y} H ${GW_X + 36} V ${GW_Y} H ${GW_X}`;
     const PV_FLOW_Y = 105;  // sun arc bend before drop to gateway
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = GW_Y + 75;
@@ -646,8 +652,12 @@ class KFlowCard extends HTMLElement {
       <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
       <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
     const gwGhostPath = `
-      <path d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
-      <path d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`;
+      <path d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`;
+    const gridGhostPath = `
+      <path d="${GRID_PATH_D}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`;
+    const gridFlowPaths = `
+      <path id="flowGridIn" d="${GRID_PATH_D}" fill="none" stroke="#FF2929" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
+      <path id="flowGridOut" d="${GRID_PATH_D}" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>`;
     const gwFlowPaths = `
       <path id="flowGwHomeIn" d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
       <path id="flowGwHomeOut" d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
@@ -737,9 +747,6 @@ class KFlowCard extends HTMLElement {
       ${battGhostPath}
       ${gwGhostPath}
 
-      <path id="flowGridIn" d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#FF2929" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
-      <path id="flowGridOut" d="M 432,175 H 361 V ${GW_Y} H ${GW_X}" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
-
       ${battFlowPaths}
       ${gwFlowPaths}
 
@@ -750,7 +757,11 @@ class KFlowCard extends HTMLElement {
 
       <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/powerwall-gateway-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
 
-      <g id="gridIconImg" transform="translate(399,133)" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="121" height="121" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="gridIconImg" transform="translate(${GRID_ICON_X},${GRID_ICON_Y})" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="${GRID_ICON_W}" height="${GRID_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
+
+      ${gridGhostPath}
+      ${gridFlowPaths}
+
       <text id="fcGridVal" x="445" y="269" text-anchor="middle" font-size="13" font-weight="700" fill="#e05c00">-- W</text>
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
@@ -797,7 +808,8 @@ class KFlowCard extends HTMLElement {
     const totalPvSensor = this._val(this.config.pv_total_power);
     const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1;
     // grid_power: positive = import from grid, negative = export to grid
-    const gridActive = this._val(this.config.grid_power) ?? this._val(this.config.grid_active_power) ?? 0;
+    let gridActive = this._val(this.config.grid_power) ?? this._val(this.config.grid_active_power) ?? 0;
+    if (!Number.isFinite(gridActive)) gridActive = 0;
     const gridImport = this._val(this.config.grid_import_energy) || 0;
     const gridExport = this._val(this.config.grid_export_energy) || 0;
     const load = this._val(this.config.consump) || 0;
@@ -848,8 +860,11 @@ class KFlowCard extends HTMLElement {
     const flowDur = (w) => Math.max(0.5, 3.0 - (Math.min(Math.abs(w), 8000) / 8000) * 2.5).toFixed(2) + 's';
     const setFlow = (id, show, watts, durStr, color) => {
       const el = getEl(id); if (!el) return;
-      el.setAttribute('opacity', show ? '1' : '0'); el.style.display = show ? '' : 'none';
-      if (show && durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
+      el.setAttribute('opacity', show ? '1' : '0');
+      el.style.display = show ? '' : 'none';
+      el.style.visibility = show ? 'visible' : 'hidden';
+      if (!show) return;
+      if (durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
       if (color !== undefined) el.setAttribute('stroke', color);
     };
 
