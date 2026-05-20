@@ -640,8 +640,13 @@ class KFlowCard extends HTMLElement {
     const PV_FLOW_Y = 105;  // sun arc bend before drop to gateway
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = GW_Y + 75;
+    const HOME_ICON_X = 179;
+    const HOME_ICON_W = 160;
     const HOME_ICON_Y = HOME_BUS_Y + 10;
+    const HOME_CENTER_X = HOME_ICON_X + Math.round(HOME_ICON_W / 2);
+    const HOME_CONN_Y = HOME_ICON_Y + 52;
     const HOME_LOAD_LABEL_Y = HOME_ICON_Y + 81;
+    const GW_HOME_PATH_D = `M ${GW_X},${GW_Y + 35} V ${HOME_CONN_Y}`;
     const SVG_H = HOME_ICON_Y + 175;
     this._flowLayout = { pvEndY: PV_FLOW_Y, gwX: GW_X, gwY: GW_Y };
 
@@ -663,12 +668,11 @@ class KFlowCard extends HTMLElement {
     const battFlowPaths = showBatt1 ? `
       <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
       <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
-    const GW_HOME_PATH_D = `M ${GW_X},${GW_Y} V ${HOME_BUS_Y}`;
     const gwHomeWireLayer = `
       <g id="gwHomeWireLayer" style="pointer-events:none">
-        <path id="gwHomeWireBase" d="${GW_HOME_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3.5" stroke-linecap="round" opacity="0.75"/>
-        <path id="flowGwHomeIn" d="${GW_HOME_PATH_D}" fill="none" stroke="#8b949e" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
-        <path id="flowGwHomeOut" d="${GW_HOME_PATH_D}" fill="none" stroke="#8b949e" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>
+        <path id="gwHomeWireBase" d="${GW_HOME_PATH_D}" fill="none" stroke="#c9d1d9" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+        <path id="flowGwHomeIn" d="${GW_HOME_PATH_D}" fill="none" stroke="#ffe83c" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+        <path id="flowGwHomeOut" d="${GW_HOME_PATH_D}" fill="none" stroke="#ffe83c" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>
       </g>`;
     const gridWireLayer = `
       <g id="gridWireLayer" style="pointer-events:none">
@@ -776,10 +780,10 @@ class KFlowCard extends HTMLElement {
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
-      <g id="homeIconImg" transform="translate(179,${HOME_ICON_Y})" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="homeIconImg" transform="translate(${HOME_ICON_X},${HOME_ICON_Y})" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="${HOME_ICON_W}" height="${HOME_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
-      ${gwHomeWireLayer}
       ${gridWireLayer}
+      ${gwHomeWireLayer}
 
       <text id="fcLoadVal" x="174" y="${HOME_LOAD_LABEL_Y}" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
       </svg></div>`+
@@ -818,8 +822,8 @@ class KFlowCard extends HTMLElement {
     const setAttr = (id, attr, val) => { const el = getEl(id); if (el) el.setAttribute(attr, val); };
     const setDisplay = (id, visible) => { const el = getEl(id); if (!el) return; el.style.display = visible ? '' : 'none'; };
 
-    const pv1 = this._val(this.config.pv1_power) || 0;
-    const totalPvSensor = this._val(this.config.pv_total_power);
+    const pv1 = this._powerWatts(this.config.pv1_power) ?? this._val(this.config.pv1_power) ?? 0;
+    const totalPvSensor = this._powerWatts(this.config.pv_total_power) ?? this._val(this.config.pv_total_power);
     const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1;
     // grid_power: positive = import from grid, negative = export to grid (watts; kW auto-converted)
     let gridActive = this._powerWatts(this.config.grid_power) ?? this._powerWatts(this.config.grid_active_power) ?? this._val(this.config.grid_power) ?? this._val(this.config.grid_active_power) ?? 0;
@@ -827,7 +831,7 @@ class KFlowCard extends HTMLElement {
     const gridFlowMinW = 5;
     const gridImport = this._val(this.config.grid_import_energy) || 0;
     const gridExport = this._val(this.config.grid_export_energy) || 0;
-    const load = this._val(this.config.consump) || 0;
+    const load = this._powerWatts(this.config.consump) ?? this._val(this.config.consump) ?? 0;
     const todayPv = this._val(this.config.today_pv) || 0;
     const todayBattChg = this._val(this.config.today_batt_chg) || 0;
     const todayLoad = this._val(this.config.today_load) || 0;
@@ -876,11 +880,11 @@ class KFlowCard extends HTMLElement {
     const setFlow = (id, show, watts, durStr, color) => {
       const el = getEl(id); if (!el) return;
       el.style.removeProperty('display');
-      el.setAttribute('opacity', show ? '1' : '0');
-      el.setAttribute('visibility', show ? 'visible' : 'hidden');
+      el.style.opacity = show ? '1' : '0';
+      el.style.visibility = show ? 'visible' : 'hidden';
       if (!show) return;
       if (durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
-      if (color !== undefined) el.setAttribute('stroke', color);
+      if (color !== undefined) el.style.stroke = color;
     };
 
     const absPwr1 = Math.abs(battPwr1);
@@ -920,25 +924,27 @@ class KFlowCard extends HTMLElement {
 
     const showPvGw = pvTotal > 10;
 
-    // Gateway → home (load + battery/grid contribution at hub)
-    const showGwHome = load > 10 || absPwr1 >= 10 || Math.abs(gridActive) >= 10;
-    const gwHomeOut = load > 10 || battPwr1 < -10 || gridActive < -10;
+    // Gateway → home (any source feeding the load through the hub)
+    const showGwHome = load > gridFlowMinW || pvTotal > gridFlowMinW || Math.abs(gridActive) >= gridFlowMinW || absPwr1 >= 10;
+    const gwHomeOut = load > gridFlowMinW || battPwr1 < -10 || gridExporting || (pvTotal > gridFlowMinW && load <= gridFlowMinW && !gridImporting);
     let gwHomeColor = '#8b949e';
     if (showGwHome) {
-      if (load > 10 && absPvLoad >= absGrid && absPvLoad >= absBattOut) gwHomeColor = loadFlowColor;
+      if (load > gridFlowMinW && absPvLoad >= absGrid && absPvLoad >= absBattOut) gwHomeColor = loadFlowColor;
       else if (absPwr1 >= Math.abs(gridActive) && absPwr1 >= 10) gwHomeColor = battLineColor;
-      else if (gridActive > 10) gwHomeColor = '#FF2929';
-      else if (gridActive < -10) gwHomeColor = '#2ecc71';
-      else if (load > 10) gwHomeColor = loadFlowColor;
+      else if (gridImporting) gwHomeColor = '#FF2929';
+      else if (gridExporting) gwHomeColor = '#2ecc71';
+      else if (pvTotal > gridFlowMinW) gwHomeColor = '#ffe83c';
+      else if (load > gridFlowMinW) gwHomeColor = loadFlowColor;
     }
-    const gwHomeW = showGwHome ? Math.max(load, absPwr1, Math.abs(gridActive)) : 0;
+    const gwHomeW = showGwHome ? Math.max(load, pvTotal, absPwr1, Math.abs(gridActive)) : 0;
     const gwHomeDur = flowDur(gwHomeW);
-    setFlow('flowGwHomeIn', showGwHome && !gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
-    setFlow('flowGwHomeOut', showGwHome && gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
+    const gwHomeFlowing = showGwHome && gwHomeW > gridFlowMinW;
+    setFlow('flowGwHomeIn', gwHomeFlowing && !gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
+    setFlow('flowGwHomeOut', gwHomeFlowing && gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
     const gwHomeWireBase = getEl('gwHomeWireBase');
     if (gwHomeWireBase) {
-      gwHomeWireBase.setAttribute('opacity', showGwHome ? '0.35' : '0.75');
-      gwHomeWireBase.setAttribute('stroke', showGwHome ? gwHomeColor : '#8b949e');
+      gwHomeWireBase.style.opacity = gwHomeFlowing ? '0.3' : '0.9';
+      gwHomeWireBase.style.stroke = gwHomeFlowing ? gwHomeColor : '#c9d1d9';
     }
 
     // Icon glows
@@ -953,7 +959,7 @@ class KFlowCard extends HTMLElement {
       gwImg.setAttribute('filter', gwActive && (pvTotal >= 50 || gwHomeW >= 50) ? 'url(#iconGlowBlue)' : (showPvGw ? 'url(#iconGlowYellow)' : ''));
     }
     const homeImg = getEl('homeIconImg');
-    if (homeImg) { homeImg.style.opacity = load > 10 ? '1' : '0.7'; homeImg.setAttribute('filter', load > 10 ? 'url(#iconGlowOrange)' : ''); }
+    if (homeImg) { homeImg.style.opacity = load > gridFlowMinW ? '1' : '0.7'; homeImg.setAttribute('filter', load > gridFlowMinW ? 'url(#iconGlowOrange)' : ''); }
 
     // Battery fill & stats
     const fill = this._battFill(battSoc1);
@@ -1026,7 +1032,7 @@ class KFlowCard extends HTMLElement {
     if (gridExport > 0) setText('gridExportVal', gridExport.toFixed(2) + ' kWh');
 
     setText('fcLoadVal', load >= 1000 ? (load / 1000).toFixed(2) + ' kW' : load.toFixed(0) + ' W');
-    setAttr('fcLoadVal', 'fill', load > 10 ? loadFlowColor : '#8b949e');
+    setAttr('fcLoadVal', 'fill', load > gridFlowMinW ? loadFlowColor : '#8b949e');
 
     setText('pv1FlowVal', pv1 >= 1000 ? (pv1 / 1000).toFixed(2) + ' kW' : pv1.toFixed(0) + ' W');
 
