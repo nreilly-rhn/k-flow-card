@@ -795,7 +795,7 @@ class KFlowCard extends HTMLElement {
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:5px">
         <div class="st"><div class="l">${this.config.label_cell_temp_minmax || 'CELL TEMP MIN/MAX'}</div><div class="v" id="bTemp1">-- °C</div></div>
         <div class="st"><div class="l">${this.config.label_bms_temp || 'BMS TEMP'}</div><div class="v" id="bTemp2">-- °C</div></div>
-        <div class="st"><div class="l">${this.config.label_endurance || 'ENDURANCE'}</div><div class="v" id="bEndurance">--</div></div>
+        <div class="st"><div class="l">${this.config.label_endurance || 'Time Remaining'}</div><div class="v" id="bEndurance">--</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px">
         <div class="st"><div class="l">${this.config.label_min_cell || 'Min Cell'}</div><div class="v" id="bMinCell">-- V</div></div>
@@ -808,6 +808,7 @@ class KFlowCard extends HTMLElement {
         <div class="pvi"><div class="ico">☀️</div><div class="lbl">Today PV</div><div class="val yw" id="statTodayPv">-- kWh</div></div>
         <div class="pvi"><div class="ico">🔋</div><div class="lbl">Chg / Dis</div><div class="val" id="statTodayBattChg">-- kWh</div><div class="val" id="statTodayBattDis" style="font-size:.62rem;color:#8b949e;margin-top:1px">-- kWh</div></div>
         <div class="pvi"><div class="ico">⚡</div><div class="lbl">Remaining</div><div class="val" id="statRemCap">-- Ah</div></div>
+        <div class="pvi"><div class="ico">⚡</div><div class="lbl">Time Remaining</div><div class="val" id="bEndurance">-- Ah</div></div>
         <div class="pvi"><div class="ico">🏡</div><div class="lbl">Today Load</div><div class="val" id="statTodayLoad">-- kWh</div></div>
       </div>
     </div>`;
