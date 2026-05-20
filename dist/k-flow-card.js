@@ -479,7 +479,7 @@ class KFlowCardEditor extends HTMLElement {
       // picker('battery_current',  'Battery Current'), # This is calculated from power & voltage
       pickerMaybeDisabled('battery_voltage',  'Battery Voltage',    labelsEnabled),
       pickerMaybeDisabled('batt_dis',         'Discharge Today',    labelsEnabled),
-    ], { toggleKey: '_show_battery', toggleOn: showBatt1, hidden: !showBatt1 }));
+    ]));
 
     // shell.appendChild(makeSection('limits', '⚙️', 'System Limits', [
     //   numberField('battery_full_ah',    'Battery Capacity',  0, 2000,  1,   'Ah'),
@@ -523,6 +523,7 @@ class KFlowCard extends HTMLElement {
       battery_power: 'sensor.jk_power',
       battery_current: 'sensor.jk_current',
       battery_voltage: 'sensor.jk_voltage',
+      battery_remaining: 'sensor.jk_remaining_capacity',
       goodwe_battery_soc: 'sensor.goodwe_battery_state_of_charge',
       goodwe_battery_curr: 'sensor.goodwe_battery_current',
       batt_dis: 'sensor.goodwe_today_battery_discharge',
