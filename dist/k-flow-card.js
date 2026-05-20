@@ -474,20 +474,18 @@ class KFlowCardEditor extends HTMLElement {
       divider(),
       picker('battery_soc',      'Battery SOC'),
       picker('battery_power',    'Battery Power'),
-      picker('battery_current',  'Battery Current'),
+      picker('battery_capacity',    'Battery Capacity'),
+      // picker('battery_current',  'Battery Current'), # This is calculated from power & voltage
       pickerMaybeDisabled('battery_voltage',  'Battery Voltage',    labelsEnabled),
       pickerMaybeDisabled('batt_dis',         'Discharge Today',    labelsEnabled),
-      divider(),
-      picker('goodwe_battery_soc',  'Fallback SOC',     true),
-      picker('goodwe_battery_curr', 'Fallback Current', true),
     ], { toggleKey: '_show_battery', toggleOn: showBatt1, hidden: !showBatt1 }));
 
-    shell.appendChild(makeSection('limits', '⚙️', 'System Limits', [
-      numberField('battery_full_ah',    'Battery Capacity',  0, 2000,  1,   'Ah'),
-      numberField('battery_full_wh',    'Battery Capacity',  0, 50000, 1,   'Wh'),
-      numberField('battery_max_power', 'Battery Max Power', 1000, 20000, 100, 'W'),
-      numberField('pv_max_power',       'PV Max Power',      1000,30000,100, 'W'),
-    ], { toggleKey: '_show_limits', toggleOn: showLimits, hidden: !showLimits }));
+    // shell.appendChild(makeSection('limits', '⚙️', 'System Limits', [
+    //   numberField('battery_full_ah',    'Battery Capacity',  0, 2000,  1,   'Ah'),
+    //   numberField('battery_full_wh',    'Battery Capacity',  0, 50000, 1,   'Wh'),
+    //   numberField('battery_max_power', 'Battery Max Power', 1000, 20000, 100, 'W'),
+    //   numberField('pv_max_power',       'PV Max Power',      1000,30000,100, 'W'),
+    // ], { toggleKey: '_show_limits', toggleOn: showLimits, hidden: !showLimits }));
 
     this.innerHTML = '';
     this.appendChild(shell);
