@@ -615,13 +615,14 @@ class KFlowCard extends HTMLElement {
     const iconPath = '/local/community/k-flow-card';    // icons served from HACS community folder
     // Topology: Sun→Gateway←Grid ; Gateway→Home ; Battery→Gateway
     const GW_X = 260;
-    const GW_Y = 400;
+    const GW_Y = 345;
     const PV_FLOW_X = 260;
     const PV_FLOW_Y = 105;  // sun arc termination
     const HOME_BUS_X = 260;
-    const HOME_BUS_Y = 475;
-    const HOME_ICON_Y = 485;
-    const HOME_LOAD_LABEL_Y = 566;
+    const HOME_BUS_Y = GW_Y + 75;
+    const HOME_ICON_Y = HOME_BUS_Y + 10;
+    const HOME_LOAD_LABEL_Y = HOME_ICON_Y + 81;
+    const SVG_H = HOME_ICON_Y + 175;
     this._flowLayout = { pvEndY: PV_FLOW_Y };
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
@@ -688,7 +689,7 @@ class KFlowCard extends HTMLElement {
     </style>
     <div style="background:#161b22;border:1px solid #21262d;border-radius:12px;padding:13px;box-shadow:0 4px 20px rgba(0,0,0,.4);width:100%;box-sizing:border-box;">
       <div class="ct">⚡ Energy Flow <span id="battStatusBadge" style="margin-left:auto;font-size:.5rem;font-weight:700;letter-spacing:1.5px;padding:1px 8px;border-radius:8px;background:#21262d;color:#8b949e;text-transform:uppercase">IDLE</span></div>
-      <div style="width:100%;max-width:520px;margin:0 auto"><svg id="flowSvg" viewBox="0 0 520 655" style="width:100%;display:block">
+      <div style="width:100%;max-width:520px;margin:0 auto"><svg id="flowSvg" viewBox="0 0 520 ${SVG_H}" style="width:100%;display:block">
       <defs>
         <filter id="arcSunF" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="7"/></filter>
         <filter id="arcSunF2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3"/></filter>
