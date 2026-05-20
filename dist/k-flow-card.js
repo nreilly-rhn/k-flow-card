@@ -778,8 +778,6 @@ class KFlowCard extends HTMLElement {
       <g id="gridIconImg" transform="translate(${GRID_ICON_X},${GRID_ICON_Y})" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="${GRID_ICON_W}" height="${GRID_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
       <text id="fcGridVal" x="445" y="269" text-anchor="middle" font-size="13" font-weight="700" fill="#e05c00">-- W</text>
-      <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
-      <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
       <g id="homeIconImg" transform="translate(${HOME_ICON_X},${HOME_ICON_Y})" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="${HOME_ICON_W}" height="${HOME_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
