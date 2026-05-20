@@ -123,10 +123,9 @@ today_load: sensor.goodwe_today_load
 consump: sensor.goodwe_house_consumption
 
 # ── Grid ─────────────────────────────────────────────
-grid_active_power: sensor.goodwe_active_power
-grid_import_energy: sensor.goodwe_today_energy_import
-grid_export_energy: sensor.goodwe_today_energy_export  # optional
-grid_power_alt: sensor.grid_phase_a_power              # optional fallback
+grid_power: sensor.my_home_site_power  # + = import from grid, − = export to grid
+grid_import_energy: sensor.goodwe_today_energy_import  # optional
+grid_export_energy: sensor.goodwe_today_energy_export    # optional
 
 # ── Primary Battery ──────────────────────────────────
 battery_soc: sensor.jk_soc
@@ -174,10 +173,11 @@ _show_limits: false        # reveal limits section in visual editor
 
 | Key | Required | Description |
 |---|---|---|
-| `grid_active_power` | **Yes** | Grid active power (W). Positive = import, negative = export |
-| `grid_import_energy` | **Yes** | Grid energy imported today (kWh) |
-| `grid_export_energy` | No | Grid energy exported today (kWh) |
-| `grid_power_alt` | No | Alternative / fallback grid power sensor (used if primary is unavailable) |
+| `grid_power` | **Yes** | Site grid power (W). **Positive** = importing from grid; **negative** = exporting to grid |
+| `grid_import_energy` | No | Grid energy imported today (kWh) — label only |
+| `grid_export_energy` | No | Grid energy exported today (kWh) — label only |
+
+Legacy YAML may still use `grid_active_power`; it is read as a fallback if `grid_power` is unset.
 
 ### Primary Battery
 
@@ -233,10 +233,6 @@ ls /config/www/community/k-flow-card/
 - Verify entity IDs in **Settings → Devices & Services → Entities**.
 - Ensure entities are not `unavailable` or `unknown` — the card skips these states.
 - Open browser Developer Tools → Console tab and look for JavaScript errors.
-
-### `grid_active_power` always shows 0
-
-The card falls back to `grid_power_alt` if the primary sensor is unavailable. Set both to cover sensor dropouts.
 
 ### Battery SOC not updating
 

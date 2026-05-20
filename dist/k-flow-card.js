@@ -455,13 +455,18 @@ class KFlowCardEditor extends HTMLElement {
       picker('consump',         'House Consumption'),
     ]));
 
+    const gridHint = (() => {
+      const info = document.createElement('div');
+      info.style.cssText = 'font-size:.72rem;line-height:1.5;color:var(--secondary-text-color);background:var(--secondary-background-color,rgba(0,0,0,.04));border:1px solid var(--divider-color,rgba(0,0,0,.10));border-radius:7px;padding:7px 10px;margin:-6px 0 12px;';
+      info.textContent = 'Positive = importing from grid. Negative = exporting to grid.';
+      return info;
+    })();
+
     shell.appendChild(makeSection('grid', '🔌', 'Grid', [
-      switchRow('invert_grid_power', '🔄 Invert grid power sign', 'Enable if positive = exporting (e.g. GoodWe active_power)'),
-      divider(),
-      picker('grid_active_power',  'Grid Active Power'),
-      picker('grid_import_energy', 'Grid Import Energy'),
-      picker('grid_export_energy', 'Grid Export Energy', true),
-      picker('grid_power_alt',     'Alt Grid Sensor',    true),
+      picker('grid_power', 'Grid Power'),
+      gridHint,
+      picker('grid_import_energy', 'Import Today (kWh)', true),
+      picker('grid_export_energy', 'Export Today (kWh)', true),
     ]));
 
     shell.appendChild(makeSection('battery1', '🔋', 'Battery', [
@@ -508,8 +513,8 @@ class KFlowCard extends HTMLElement {
     return {
       pv1_power: 'sensor.goodwe_pv1_power',
       pv_total_power: 'sensor.goodwe_pv_power',
-      grid_active_power: 'sensor.goodwe_active_power',
-      grid_import_energy: 'sensor.goodwe_today_energy_import',
+      grid_power: 'sensor.my_home_site_power',
+      grid_import_energy: '',
       grid_export_energy: '',
       consump: 'sensor.goodwe_house_consumption',
       today_pv: 'sensor.goodwe_today_s_pv_generation',
@@ -534,10 +539,8 @@ class KFlowCard extends HTMLElement {
       label_entity_batt_dis: '',
       label_entity_endu_eta: '',
       _labels_custom_entities: false,
-      grid_power_alt: 'sensor.grid_phase_a_power',
       _show_battery: true,
       invert_battery_power: false,
-      invert_grid_power: false,
       _show_limits: false,
     };
   }
@@ -793,9 +796,8 @@ class KFlowCard extends HTMLElement {
     const pv1 = this._val(this.config.pv1_power) || 0;
     const totalPvSensor = this._val(this.config.pv_total_power);
     const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1;
-    const _gridPrimary = this._val(this.config.grid_active_power);
-    let gridActive = _gridPrimary !== null ? _gridPrimary : (this._val(this.config.grid_power_alt) ?? 0);
-    if (this.config.invert_grid_power) gridActive = -gridActive;
+    // grid_power: positive = import from grid, negative = export to grid
+    const gridActive = this._val(this.config.grid_power) ?? this._val(this.config.grid_active_power) ?? 0;
     const gridImport = this._val(this.config.grid_import_energy) || 0;
     const gridExport = this._val(this.config.grid_export_energy) || 0;
     const load = this._val(this.config.consump) || 0;
@@ -976,7 +978,7 @@ class KFlowCard extends HTMLElement {
     setAttr('fcGridVal', 'fill', gridActive > 10 ? '#FF2929' : gridActive < -10 ? '#2ecc71' : '#3a3a3a');
     setText('gridImportVal', gridImport.toFixed(2) + ' kWh');
     setDisplay('gridExportVal', gridExport > 0);
-    if (gridExport > 0) setText('gridExportVal', gridExport + ' W');
+    if (gridExport > 0) setText('gridExportVal', gridExport.toFixed(2) + ' kWh');
 
     setText('fcLoadVal', load >= 1000 ? (load / 1000).toFixed(2) + ' kW' : load.toFixed(0) + ' W');
     setAttr('fcLoadVal', 'fill', load > 10 ? loadFlowColor : '#8b949e');
