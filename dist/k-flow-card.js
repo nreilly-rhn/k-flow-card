@@ -597,7 +597,7 @@ class KFlowCard extends HTMLElement {
 
   _battFill(soc){
     const ft=145,fb=263,fh=118;const fH=Math.round((soc||0)/100*fh),fY=fb-fH;let c,f,tc;
-    if(soc<=40){c='#ff2200';f='url(#battGlowRed)';tc='#000';}else if(soc<=75){c='#f4d03f';f='url(#battGlowOrange)';tc='#000';}else{c='#00d4ff';f='url(#battGlowCyan)';tc='#fff';}
+    if(soc<=40){c='#ff2200';f='url(#battGlowRed)';tc='#000';}else if(soc<=75){c='#f4d03f';f='url(#battGlowOrange)';tc='#000';}else{c='#00ff11';f='url(#battGlowCyan)';tc='#fff';}
     return{y:fY,height:fH,color:c,filter:fH>4?f:'none',textColor:tc};
   }
 
