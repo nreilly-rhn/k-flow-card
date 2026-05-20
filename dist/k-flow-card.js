@@ -565,6 +565,18 @@ class KFlowCard extends HTMLElement {
     return parseFloat(s.state);
   }
 
+  /** Power in watts; converts kW sensors using unit_of_measurement. */
+  _powerWatts(eid) {
+    if (!eid) return null;
+    const s = this._hass?.states?.[eid];
+    if (!s || s.state === 'unavailable' || s.state === 'unknown') return null;
+    let v = parseFloat(s.state);
+    if (!Number.isFinite(v)) return null;
+    const uom = String(s.attributes?.unit_of_measurement || '').toLowerCase();
+    if (uom === 'kw') v *= 1000;
+    return v;
+  }
+
   _socColor(p) { return p<=25?'#f85149':p<=50?'#f39c4b':p<=75?'#58a6ff':'#4CAF50'; }
   _remCapColor(p) { return p<=15?'#e34d4c':p<=30?'#f39c4b':p<=55?'#f4d03f':'#2ecc71'; }
   _fmtTime(h) { if(!isFinite(h)||h<=0) return'--';const hh=Math.floor(h),mm=Math.round((h-hh)*60);return hh+'h '+(mm<10?'0':'')+mm+'m'; }
@@ -622,9 +634,9 @@ class KFlowCard extends HTMLElement {
     const GRID_ICON_X = 399;
     const GRID_ICON_Y = 133;
     const GRID_ICON_W = 121;
-    const GRID_CONN_X = GRID_ICON_X + 14;
-    const GRID_CONN_Y = GRID_ICON_Y + Math.round(GRID_ICON_W * 0.48);
-    const GRID_PATH_D = `M ${GRID_CONN_X},${GRID_CONN_Y} H ${GW_X + 36} V ${GW_Y} H ${GW_X}`;
+    const GW_CONN_X = GW_X + 35;
+    const GRID_CONN_Y = GRID_ICON_Y + Math.round(GRID_ICON_W / 2);
+    const GRID_PATH_D = `M ${GRID_ICON_X},${GRID_CONN_Y} H ${GW_CONN_X} V ${GW_Y}`;
     const PV_FLOW_Y = 105;  // sun arc bend before drop to gateway
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = GW_Y + 75;
@@ -653,11 +665,12 @@ class KFlowCard extends HTMLElement {
       <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
     const gwGhostPath = `
       <path d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`;
-    const gridGhostPath = `
-      <path d="${GRID_PATH_D}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`;
-    const gridFlowPaths = `
-      <path id="flowGridIn" d="${GRID_PATH_D}" fill="none" stroke="#FF2929" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
-      <path id="flowGridOut" d="${GRID_PATH_D}" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>`;
+    const gridWireLayer = `
+      <g id="gridWireLayer" style="pointer-events:none">
+        <path id="gridWireBase" d="${GRID_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+        <path id="flowGridIn" d="${GRID_PATH_D}" fill="none" stroke="#FF2929" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
+        <path id="flowGridOut" d="${GRID_PATH_D}" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
+      </g>`;
     const gwFlowPaths = `
       <path id="flowGwHomeIn" d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
       <path id="flowGwHomeOut" d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
@@ -759,14 +772,14 @@ class KFlowCard extends HTMLElement {
 
       <g id="gridIconImg" transform="translate(${GRID_ICON_X},${GRID_ICON_Y})" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="${GRID_ICON_W}" height="${GRID_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
-      ${gridGhostPath}
-      ${gridFlowPaths}
-
       <text id="fcGridVal" x="445" y="269" text-anchor="middle" font-size="13" font-weight="700" fill="#e05c00">-- W</text>
       <text id="gridImportVal" x="397" y="165" text-anchor="middle" font-size="10" font-weight="600" fill="#cde">-- kWh</text>
       <text id="gridExportVal" x="397" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#cde" style="display:none">-- kWh</text>
 
       <g id="homeIconImg" transform="translate(179,${HOME_ICON_Y})" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
+
+      ${gridWireLayer}
+
       <text id="fcLoadVal" x="174" y="${HOME_LOAD_LABEL_Y}" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
       </svg></div>`+
 
@@ -807,9 +820,10 @@ class KFlowCard extends HTMLElement {
     const pv1 = this._val(this.config.pv1_power) || 0;
     const totalPvSensor = this._val(this.config.pv_total_power);
     const pvTotal = (totalPvSensor !== null && !isNaN(totalPvSensor) && totalPvSensor > 0) ? totalPvSensor : pv1;
-    // grid_power: positive = import from grid, negative = export to grid
-    let gridActive = this._val(this.config.grid_power) ?? this._val(this.config.grid_active_power) ?? 0;
+    // grid_power: positive = import from grid, negative = export to grid (watts; kW auto-converted)
+    let gridActive = this._powerWatts(this.config.grid_power) ?? this._powerWatts(this.config.grid_active_power) ?? this._val(this.config.grid_power) ?? this._val(this.config.grid_active_power) ?? 0;
     if (!Number.isFinite(gridActive)) gridActive = 0;
+    const gridFlowMinW = 5;
     const gridImport = this._val(this.config.grid_import_energy) || 0;
     const gridExport = this._val(this.config.grid_export_energy) || 0;
     const load = this._val(this.config.consump) || 0;
@@ -861,8 +875,7 @@ class KFlowCard extends HTMLElement {
     const setFlow = (id, show, watts, durStr, color) => {
       const el = getEl(id); if (!el) return;
       el.setAttribute('opacity', show ? '1' : '0');
-      el.style.display = show ? '' : 'none';
-      el.style.visibility = show ? 'visible' : 'hidden';
+      el.setAttribute('visibility', show ? 'visible' : 'hidden');
       if (!show) return;
       if (durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
       if (color !== undefined) el.setAttribute('stroke', color);
@@ -882,8 +895,15 @@ class KFlowCard extends HTMLElement {
       else battLineColor = '#f85149'; }
     setFlow('flowBattIn', battShowIn, absPwr1, battDur, battLineColor);
     setFlow('flowBattOut', battShowOut, absPwr1, battDur, battLineColor);
-    setFlow('flowGridIn', gridActive > 10, gridActive, flowDur(gridActive), '#FF2929');
-    setFlow('flowGridOut', gridActive < -10, Math.abs(gridActive), flowDur(Math.abs(gridActive)), '#2ecc71');
+    const gridImporting = gridActive > gridFlowMinW;
+    const gridExporting = gridActive < -gridFlowMinW;
+    setFlow('flowGridIn', gridImporting, gridActive, flowDur(gridActive), '#FF2929');
+    setFlow('flowGridOut', gridExporting, Math.abs(gridActive), flowDur(Math.abs(gridActive)), '#2ecc71');
+    const gridWireBase = getEl('gridWireBase');
+    if (gridWireBase) {
+      gridWireBase.setAttribute('opacity', gridImporting || gridExporting ? '0.35' : '0.75');
+      gridWireBase.setAttribute('stroke', gridImporting ? '#FF2929' : gridExporting ? '#2ecc71' : '#8b949e');
+    }
 
     // Dominant colour for power reaching the home (via gateway)
     const absGrid = Math.abs(gridActive > 10 ? gridActive : 0);
@@ -918,7 +938,7 @@ class KFlowCard extends HTMLElement {
     const battIconWrap = getEl('battIconWrap');
     if (battIconWrap) { battIconWrap.setAttribute('filter', absPwr1 >= 50 ? 'url(#iconGlowBlue)' : ''); }
     const gridImg = getEl('gridIconImg');
-    if (gridImg) { gridImg.style.opacity = Math.abs(gridActive) < 10 ? '0.4' : '1'; gridImg.setAttribute('filter', gridActive >= 50 ? 'url(#iconGlowOrange)' : gridActive <= -50 ? 'url(#iconGlowYellow)' : ''); }
+    if (gridImg) { gridImg.style.opacity = !gridImporting && !gridExporting ? '0.4' : '1'; gridImg.setAttribute('filter', gridActive >= 50 ? 'url(#iconGlowOrange)' : gridActive <= -50 ? 'url(#iconGlowYellow)' : ''); }
     const gwImg = getEl('gatewayIconImg');
     if (gwImg) {
       const gwActive = showPvGw || showGwHome;
@@ -988,9 +1008,12 @@ class KFlowCard extends HTMLElement {
     const badge = getEl('battStatusBadge');
     if (badge) { badge.textContent = absPwr1 < 50 ? 'IDLE' : isCharging1 ? 'CHG' : 'DISCHG'; badge.style.color = absPwr1 < 50 ? '#8b949e' : isCharging1 ? '#00d7ff' : '#3ce878'; }
 
-    const gridDir = gridActive > 10 ? '▼ ' : gridActive < -10 ? '▲ ' : '';
-    setText('fcGridVal', gridDir + Math.abs(gridActive).toFixed(0) + ' W');
-    setAttr('fcGridVal', 'fill', gridActive > 10 ? '#FF2929' : gridActive < -10 ? '#2ecc71' : '#3a3a3a');
+    const gridDir = gridImporting ? '▼ ' : gridExporting ? '▲ ' : '';
+    const gridValTxt = Math.abs(gridActive) >= 1000
+      ? (Math.abs(gridActive) / 1000).toFixed(2) + ' kW'
+      : Math.abs(gridActive).toFixed(0) + ' W';
+    setText('fcGridVal', gridDir + gridValTxt);
+    setAttr('fcGridVal', 'fill', gridImporting ? '#FF2929' : gridExporting ? '#2ecc71' : '#3a3a3a');
     setText('gridImportVal', gridImport.toFixed(2) + ' kWh');
     setDisplay('gridExportVal', gridExport > 0);
     if (gridExport > 0) setText('gridExportVal', gridExport.toFixed(2) + ' kWh');
