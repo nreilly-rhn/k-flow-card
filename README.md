@@ -4,14 +4,14 @@
 
 **A beautiful real-time solar energy flow card for Home Assistant.**
 
-k-flow-card visualises the live power flow between your solar panels, battery, inverter, grid and home load — all inside a single animated Lovelace card. It ships with a full visual editor and supports GoodWe inverters and JK-BMS batteries.
+k-flow-card visualises the live power flow between your solar panels, battery, grid and home load — all inside a single animated Lovelace card. It ships with a full visual editor and supports GoodWe inverters and JK-BMS batteries.
 
 ---
 
 ## ✨ Features
 
 - Fully customizable,label of boxes now can be changed, Battery etc can be disabled. Grid and Battery Flow direction cane be inverted via toggle switch.
-- Live animated energy-flow diagram (PV → Inverter → Battery / Grid / Load)
+- Live animated energy-flow diagram (Sun / PV → Gateway → Battery / Grid / Load)
 - Animated sun arc that tracks actual sunrise / sunset from `sun.sun`
 - PV1 string power (optional total PV sensor)
 - Battery endurance / charge-ETA estimator
@@ -49,13 +49,11 @@ k-flow-card visualises the live power flow between your solar panels, battery, i
    - `home-icon.png`
    - `grid-icon.png`
    - `powerwall-gateway-icon.png`
-   - `fronius-inverter-icon.png`
-
 2. Create the folder `/config/www/community/k-flow-card/` if it does not already exist, and copy all files into it:
 
    ```bash
    mkdir -p /config/www/community/k-flow-card
-   cp k-flow-card.js flow.svg home-icon.png grid-icon.png powerwall-gateway-icon.png fronius-inverter-icon.png \
+   cp k-flow-card.js flow.svg home-icon.png grid-icon.png powerwall-gateway-icon.png \
       /config/www/community/k-flow-card/
    ```
 
@@ -95,10 +93,9 @@ The card uses PNG icons automatically served from the install folder:
 
 | File | Used for |
 |---|---|
-| `fronius-inverter-icon.png` | Inverter hub on the flow diagram |
 | `home-icon.png` | House / load icon |
 | `grid-icon.png` | Grid / utility icon |
-| `powerwall-gateway-icon.png` | Gateway hub (inverter→gateway←grid, gateway→home) |
+| `powerwall-gateway-icon.png` | Gateway hub (PV→gateway←grid, gateway→home) |
 
 Icons are served from `/local/community/k-flow-card/` for both HACS and manual installs. As long as the files are in the correct folder no extra configuration is required.
 
@@ -114,7 +111,6 @@ Open any dashboard in **Edit** mode, add a new card, and search for **k-flow-car
 
 ```yaml
 type: custom:k-flow-card
-inverter_name: My GoodWe
 
 # ── Solar ────────────────────────────────────────────
 pv1_power: sensor.goodwe_pv1_power
@@ -139,14 +135,14 @@ battery_current: sensor.jk_current
 battery_voltage: sensor.jk_voltage
 batt_dis: sensor.goodwe_today_battery_discharge
 
-# ── Fallback sensors (inverter-reported, optional) ───
+# ── Fallback sensors (optional) ──────────────────────
 goodwe_battery_soc: sensor.goodwe_battery_state_of_charge
 goodwe_battery_curr: sensor.goodwe_battery_current
 
 # ── System Limits ────────────────────────────────────
 battery_full_ah: 314       # your battery capacity in Ah
 battery_full_wh: 16076     # your battery capacity in Wh
-inverter_max_power: 6000   # inverter rated power in W
+battery_max_power: 6000    # battery power scale for the Pwr bar (W)
 pv_max_power: 7500         # total PV array peak in W
 
 # ── Feature Toggles ──────────────────────────────────
@@ -157,14 +153,13 @@ _show_limits: false        # reveal limits section in visual editor
 
 ## 📋 Entity Reference
 
-### General
+### Solar
 
 | Key | Required | Type | Description |
 |---|---|---|---|
-| `inverter_name` | No | text | Label shown on the inverter box (e.g. `GoodWe 6kW`) |
 | `sun` | No | entity | Sun entity, defaults to `sun.sun` |
 
-### Solar
+### Solar sensors
 
 | Key | Required | Description |
 |---|---|---|
@@ -193,8 +188,8 @@ _show_limits: false        # reveal limits section in visual editor
 | `battery_current` | **Yes** | Battery current (A) |
 | `battery_voltage` | **Yes** | Battery pack voltage (V) |
 | `batt_dis` | **Yes** | Battery discharged today (kWh) |
-| `goodwe_battery_soc` | No | Inverter-reported SOC — fallback if primary is unavailable |
-| `goodwe_battery_curr` | No | Inverter-reported current — fallback |
+| `goodwe_battery_soc` | No | GoodWe SOC — fallback if primary is unavailable |
+| `goodwe_battery_curr` | No | GoodWe current — fallback |
 
 ### System Limits
 
@@ -202,7 +197,7 @@ _show_limits: false        # reveal limits section in visual editor
 |---|---|---|
 | `battery_full_ah` | `314` | Battery full capacity in Ah — used for endurance calculation |
 | `battery_full_wh` | `16076` | Battery full capacity in Wh — used for endurance calculation |
-| `inverter_max_power` | `6000` | Inverter rated output in W — used for load % bar |
+| `battery_max_power` | `6000` | Battery power scale in W — used for the Pwr bar |
 | `pv_max_power` | `7500` | Total PV array peak in W — used for PV bar scaling |
 
 ### Feature Toggles
@@ -227,7 +222,7 @@ Icon PNGs and `flow.svg` must be in `/config/www/community/k-flow-card/`:
 
 ```bash
 ls /config/www/community/k-flow-card/
-# Expected: k-flow-card.js  flow.svg  home-icon.png  grid-icon.png  fronius-inverter-icon.png  powerwall-gateway-icon.png
+# Expected: k-flow-card.js  flow.svg  home-icon.png  grid-icon.png  powerwall-gateway-icon.png
 ```
 
 - **HACS:** If icons are missing after install, go to HACS → k-flow-card → **Redownload**.
