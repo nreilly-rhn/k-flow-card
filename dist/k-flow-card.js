@@ -807,7 +807,7 @@ class KFlowCard extends HTMLElement {
       <div class="pvf">
         <div class="pvi"><div class="ico">☀️</div><div class="lbl">Today PV</div><div class="val yw" id="statTodayPv">-- kWh</div></div>
         <div class="pvi"><div class="ico">⚡</div><div class="lbl">Remaining</div><div class="val" id="statRemCap">-- Ah</div></div>
-        <div class="pvi"><div class="ico">⚡</div><div class="lbl">Time Remaining</div><div class="val" id="bEndurance">-- Ah</div></div>
+        <div class="pvi"><div class="ico">⚡</div><div class="lbl">Time Remaining</div><div class="v" id="bEndurance">--</div></div>
         <div class="pvi"><div class="ico">🏡</div><div class="lbl">Today Load</div><div class="val" id="statTodayLoad">-- kWh</div></div>
       </div>
     </div>`;
