@@ -658,9 +658,6 @@ class KFlowCard extends HTMLElement {
     const battText = `
       <text id="battPwrFlow" x="75" y="165" font-size="10" font-weight="600" fill="#cde">-- W</text>
       <text id="battCurrFlow" x="75" y="196" font-size="10" font-weight="600" fill="#fff">-- A</text>
-      <text id="bEnduranceSvg" x="40" y="268" text-anchor="middle" font-size="10" font-weight="600" fill="#8b949e">--</text>
-      <text id="bEnduEtaLabel" x="40" y="282" text-anchor="middle" font-size="8" fill="#8b949e" letter-spacing="0.5">ENDU</text>
-      <text id="bEnduEta" x="40" y="294" text-anchor="middle" font-size="9" font-weight="700" fill="#8b949e">--</text>
     `;
 
     const batteryTip = `<rect x="75" y="126" width="18" height="4" rx="2" fill="url(#battCapGrad)"/>`;
