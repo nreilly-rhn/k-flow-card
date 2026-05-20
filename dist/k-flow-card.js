@@ -636,7 +636,11 @@ class KFlowCard extends HTMLElement {
     const GRID_ICON_W = 121;
     const GW_CONN_X = GW_X + 35;
     const GRID_CONN_Y = GRID_ICON_Y + Math.round(GRID_ICON_W / 2);
-    const GRID_PATH_D = `M ${GRID_ICON_X},${GRID_CONN_Y} H ${GW_CONN_X} V ${GW_Y}`;
+    const BATT_CONN_X = 59;
+    const BATT_CONN_Y = 175;
+    // Smooth curves into gateway (cubic Bézier, tangent-friendly for dash animation)
+    const GRID_PATH_D = `M ${GRID_ICON_X},${GRID_CONN_Y} C ${GRID_ICON_X - 58},${GRID_CONN_Y} ${GW_CONN_X + 22},${GRID_CONN_Y + 42} ${GW_CONN_X},${GW_Y}`;
+    const BATT_PATH_D = `M ${BATT_CONN_X},${BATT_CONN_Y} C ${BATT_CONN_X + 72},${BATT_CONN_Y} ${GW_X - 58},${GW_Y - 8} ${GW_X},${GW_Y}`;
     const PV_FLOW_Y = 105;  // sun arc bend before drop to gateway
     const HOME_BUS_X = 260;
     const HOME_BUS_Y = GW_Y + 75;
@@ -663,11 +667,11 @@ class KFlowCard extends HTMLElement {
 
     // Battery visibility helpers
     const battGhostPath = showBatt1
-      ? `<path d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`
+      ? `<path d="${BATT_PATH_D}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`
       : '';
     const battFlowPaths = showBatt1 ? `
-      <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
-      <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
+      <path id="flowBattIn" d="${BATT_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+      <path id="flowBattOut" d="${BATT_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
     const gwHomeWireLayer = `
       <g id="gwHomeWireLayer" style="pointer-events:none">
         <path id="gwHomeWireBase" d="${GW_HOME_PATH_D}" fill="none" stroke="#c9d1d9" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
@@ -676,9 +680,9 @@ class KFlowCard extends HTMLElement {
       </g>`;
     const gridWireLayer = `
       <g id="gridWireLayer" style="pointer-events:none">
-        <path id="gridWireBase" d="${GRID_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
-        <path id="flowGridIn" d="${GRID_PATH_D}" fill="none" stroke="#FF2929" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
-        <path id="flowGridOut" d="${GRID_PATH_D}" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
+        <path id="gridWireBase" d="${GRID_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3.5" stroke-linecap="round" opacity="0.75"/>
+        <path id="flowGridIn" d="${GRID_PATH_D}" fill="none" stroke="#FF2929" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
+        <path id="flowGridOut" d="${GRID_PATH_D}" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
       </g>`;
     const battIconSection = !showBatt1 ? '' : (
       `<g transform="translate(-36.6, 25.4) scale(0.8)">
@@ -772,7 +776,7 @@ class KFlowCard extends HTMLElement {
 
       ${battIconSection}
 
-      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/powerwall-gateway-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
 
       <g id="gridIconImg" transform="translate(${GRID_ICON_X},${GRID_ICON_Y})" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="${GRID_ICON_W}" height="${GRID_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
