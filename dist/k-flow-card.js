@@ -659,7 +659,7 @@ class KFlowCard extends HTMLElement {
           <rect x="53" y="145" width="62" height="118" rx="8" fill="#0f1214"/>
             <rect id="battFillBar" x="53" y="263" width="62" height="0" rx="0" fill="#3fb950" clip-path="url(#battBodyClip)"/>
             <rect id="battFillHL" x="53" y="263" width="62" height="0" rx="0" fill="url(#battFillHighlight)" clip-path="url(#battBodyClip)" style="pointer-events:none"/>
-            <g id="battBoltGroup" opacity="0"><polygon points="86,176 74,199 82,199 77,223 93,195 85,195 97,176" fill="#ff1a22" stroke="rgba(100,150,255,.5)" stroke-width="0.8" filter="url(#battGlowBolt)"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.0s" repeatCount="indefinite"/></polygon></g>
+            <g id="battBoltGroup" opacity="0"><polygon points="86,176 74,199 82,199 77,223 93,195 85,195 97,176" fill="#ffa01a" stroke="rgba(100,150,255,.5)" stroke-width="0.8" filter="url(#battGlowBolt)"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.0s" repeatCount="indefinite"/></polygon></g>
             <text id="fcBattVal" x="84" y="211" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">--%</text>
             <text id="battVoltageFlow" x="84" y="285" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">-- V</text>
         </g>
@@ -846,11 +846,8 @@ class KFlowCard extends HTMLElement {
     const flowDur = (w) => Math.max(0.5, 3.0 - (Math.min(Math.abs(w), 8000) / 8000) * 2.5).toFixed(2) + 's';
     const setFlow = (id, show, watts, durStr, color) => {
       const el = getEl(id); if (!el) return;
-      el.setAttribute('opacity', show ? '1' : '0');
-      el.style.display = show ? '' : 'none';
-      el.style.visibility = show ? 'visible' : 'hidden';
-      if (!show) return;
-      if (durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
+      el.setAttribute('opacity', show ? '1' : '0'); el.style.display = show ? '' : 'none';
+      if (show && durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
       if (color !== undefined) el.setAttribute('stroke', color);
     };
 
@@ -858,29 +855,16 @@ class KFlowCard extends HTMLElement {
     const isCharging1 = battPwr1 > 10;
     const showBattIn = battPwr1 > 10;
     const showBattOut = battPwr1 < -10;
-    let battChargeColor = '#8b949e';
-    let battDischargeColor = '#8b949e';
-    let battDur = '4.0s';
-    let battShowIn = false;
-    let battShowOut = false;
-    if (absPwr1 < 10) {
-      battShowIn = false;
-      battShowOut = false;
-    } else if (absPwr1 < 50) {
-      battShowIn = showBattIn;
-      battShowOut = showBattOut;
-    } else {
-      battShowIn = showBattIn;
-      battShowOut = showBattOut;
-      battDur = flowDur(absPwr1);
-      battChargeColor = '#2b59ff';
-      if (absPwr1 < 1000) battDischargeColor = '#f39c4b';
-      else if (absPwr1 < 2500) battDischargeColor = '#e67e22';
-      else battDischargeColor = '#f85149';
-    }
-    const battLineColor = isCharging1 ? battChargeColor : battDischargeColor;
-    setFlow('flowBattIn', battShowIn, absPwr1, battDur, battChargeColor);
-    setFlow('flowBattOut', battShowOut, absPwr1, battDur, battDischargeColor);
+    let battLineColor = '#8b949e', battDur = '4.0s', battShowIn = false, battShowOut = false;
+    if (absPwr1 < 10) { battShowIn = false; battShowOut = false; }
+    else if (absPwr1 < 50) { battShowIn = showBattIn; battShowOut = showBattOut; battLineColor = '#8b949e'; }
+    else { battShowIn = showBattIn; battShowOut = showBattOut; battDur = flowDur(absPwr1);
+      if (isCharging1) battLineColor = '#2bff60';
+      else if (absPwr1 < 1000) battLineColor = '#f39c4b';
+      else if (absPwr1 < 2500) battLineColor = '#e67e22';
+      else battLineColor = '#f85149'; }
+    setFlow('flowBattIn', battShowIn, absPwr1, battDur, battLineColor);
+    setFlow('flowBattOut', battShowOut, absPwr1, battDur, battLineColor);
     setFlow('flowGridIn', gridActive > 10, gridActive, flowDur(gridActive), '#FF2929');
     setFlow('flowGridOut', gridActive < -10, Math.abs(gridActive), flowDur(Math.abs(gridActive)), '#2ecc71');
 
