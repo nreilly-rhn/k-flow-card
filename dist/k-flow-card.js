@@ -970,7 +970,7 @@ class KFlowCard extends HTMLElement {
     setText('battVoltageFlow', battVolt1.toFixed(1) + ' V');
     setText('battPwrFlow', absPwr1.toFixed(0) + ' W');
     setText('battCurrFlow', battCurr1.toFixed(1) + ' A');
-    setText('battCurrFlow', (battPwrFlow / battVoltageFlow).toFixed(1) + ' A');
+    setText('battCurrFlow', (battVolt1.toFixed(1) / absPwr1.toFixed(0)).toFixed(1) + ' A');
     const bolt = getEl('battBoltGroup'); if (bolt) bolt.setAttribute('opacity', (battPwr1 > 10 && absPwr1 >= 10) ? '1' : '0');
     setText('bBattDis', battDis1 + ' kWh');
 
