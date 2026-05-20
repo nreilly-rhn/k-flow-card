@@ -1029,9 +1029,6 @@ class KFlowCard extends HTMLElement {
       : Math.abs(gridActive).toFixed(0) + ' W';
     setText('fcGridVal', gridDir + gridValTxt);
     setAttr('fcGridVal', 'fill', gridImporting ? '#FF2929' : gridExporting ? '#2ecc71' : '#3a3a3a');
-    setText('gridImportVal', gridImport.toFixed(2) + ' kWh');
-    setDisplay('gridExportVal', gridExport > 0);
-    if (gridExport > 0) setText('gridExportVal', gridExport.toFixed(2) + ' kWh');
 
     setText('fcLoadVal', load >= 1000 ? (load / 1000).toFixed(2) + ' kW' : load.toFixed(0) + ' W');
     setAttr('fcLoadVal', 'fill', load > gridFlowMinW ? loadFlowColor : '#8b949e');
