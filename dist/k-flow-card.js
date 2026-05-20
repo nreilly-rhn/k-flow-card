@@ -846,8 +846,11 @@ class KFlowCard extends HTMLElement {
     const flowDur = (w) => Math.max(0.5, 3.0 - (Math.min(Math.abs(w), 8000) / 8000) * 2.5).toFixed(2) + 's';
     const setFlow = (id, show, watts, durStr, color) => {
       const el = getEl(id); if (!el) return;
-      el.setAttribute('opacity', show ? '1' : '0'); el.style.display = show ? '' : 'none';
-      if (show && durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
+      el.setAttribute('opacity', show ? '1' : '0');
+      el.style.display = show ? '' : 'none';
+      el.style.visibility = show ? 'visible' : 'hidden';
+      if (!show) return;
+      if (durStr !== undefined) { const anim = el.querySelector('animate'); if (anim) anim.setAttribute('dur', durStr); }
       if (color !== undefined) el.setAttribute('stroke', color);
     };
 
@@ -855,16 +858,29 @@ class KFlowCard extends HTMLElement {
     const isCharging1 = battPwr1 > 10;
     const showBattIn = battPwr1 > 10;
     const showBattOut = battPwr1 < -10;
-    let battLineColor = '#8b949e', battDur = '4.0s', battShowIn = false, battShowOut = false;
-    if (absPwr1 < 10) { battShowIn = false; battShowOut = false; }
-    else if (absPwr1 < 50) { battShowIn = showBattIn; battShowOut = showBattOut; battLineColor = '#8b949e'; }
-    else { battShowIn = showBattIn; battShowOut = showBattOut; battDur = flowDur(absPwr1);
-      if (isCharging1) battLineColor = '#2bff32';
-      else if (absPwr1 < 1000) battLineColor = '#f39c4b';
-      else if (absPwr1 < 2500) battLineColor = '#e67e22';
-      else battLineColor = '#f85149'; }
-    setFlow('flowBattIn', battShowIn, absPwr1, battDur, battLineColor);
-    setFlow('flowBattOut', battShowOut, absPwr1, battDur, battLineColor);
+    let battChargeColor = '#8b949e';
+    let battDischargeColor = '#8b949e';
+    let battDur = '4.0s';
+    let battShowIn = false;
+    let battShowOut = false;
+    if (absPwr1 < 10) {
+      battShowIn = false;
+      battShowOut = false;
+    } else if (absPwr1 < 50) {
+      battShowIn = showBattIn;
+      battShowOut = showBattOut;
+    } else {
+      battShowIn = showBattIn;
+      battShowOut = showBattOut;
+      battDur = flowDur(absPwr1);
+      battChargeColor = '#2b59ff';
+      if (absPwr1 < 1000) battDischargeColor = '#f39c4b';
+      else if (absPwr1 < 2500) battDischargeColor = '#e67e22';
+      else battDischargeColor = '#f85149';
+    }
+    const battLineColor = isCharging1 ? battChargeColor : battDischargeColor;
+    setFlow('flowBattIn', battShowIn, absPwr1, battDur, battChargeColor);
+    setFlow('flowBattOut', battShowOut, absPwr1, battDur, battDischargeColor);
     setFlow('flowGridIn', gridActive > 10, gridActive, flowDur(gridActive), '#FF2929');
     setFlow('flowGridOut', gridActive < -10, Math.abs(gridActive), flowDur(Math.abs(gridActive)), '#2ecc71');
 
