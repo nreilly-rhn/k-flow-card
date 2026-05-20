@@ -983,7 +983,7 @@ class KFlowCard extends HTMLElement {
 
     setText('pv1FlowVal', pv1 >= 1000 ? (pv1 / 1000).toFixed(2) + ' kW' : pv1.toFixed(0) + ' W');
 
-    setText('statTodayPv', todayPv + ' kWh');
+    setText('statTodayPv', (todayPv / 1000).toFixed(2) + ' kWh');
     setText('statTodayBattChg', todayBattChg + ' kWh');
     setText('statTodayBattDis', battDis1 + ' kWh');
     setText('statTodayLoad', todayLoad + ' kWh');
