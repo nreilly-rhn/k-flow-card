@@ -661,19 +661,21 @@ class KFlowCard extends HTMLElement {
       ? `<path d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>`
       : '';
     const battFlowPaths = showBatt1 ? `
-      <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
-      <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
-    const gwGhostPath = `
-      <path d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#1e3a5f" stroke-width="3" stroke-linecap="round" opacity="0.18"/>`;
+      <path id="flowBattIn" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+      <path id="flowBattOut" d="M 59,175 H 132 V ${GW_Y} H ${GW_X}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>` : '';
+    const GW_HOME_PATH_D = `M ${GW_X},${GW_Y} V ${HOME_BUS_Y}`;
+    const gwHomeWireLayer = `
+      <g id="gwHomeWireLayer" style="pointer-events:none">
+        <path id="gwHomeWireBase" d="${GW_HOME_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3.5" stroke-linecap="round" opacity="0.75"/>
+        <path id="flowGwHomeIn" d="${GW_HOME_PATH_D}" fill="none" stroke="#8b949e" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
+        <path id="flowGwHomeOut" d="${GW_HOME_PATH_D}" fill="none" stroke="#8b949e" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>
+      </g>`;
     const gridWireLayer = `
       <g id="gridWireLayer" style="pointer-events:none">
         <path id="gridWireBase" d="${GRID_PATH_D}" fill="none" stroke="#8b949e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
         <path id="flowGridIn" d="${GRID_PATH_D}" fill="none" stroke="#FF2929" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="0.8s" repeatCount="indefinite"/></path>
         <path id="flowGridOut" d="${GRID_PATH_D}" fill="none" stroke="#2ecc71" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 10" opacity="0" visibility="hidden"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="0.8s" repeatCount="indefinite"/></path>
       </g>`;
-    const gwFlowPaths = `
-      <path id="flowGwHomeIn" d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="-24" to="0" dur="4.0s" repeatCount="indefinite"/></path>
-      <path id="flowGwHomeOut" d="M ${GW_X},${GW_Y} V ${HOME_BUS_Y}" fill="none" stroke="#8b949e" stroke-width="3" stroke-linecap="round" stroke-dasharray="14 10" opacity="0" style="display:none"><animate attributeName="stroke-dashoffset" from="0" to="-24" dur="4.0s" repeatCount="indefinite"/></path>`;
     const battIconSection = !showBatt1 ? '' : (
       `<g transform="translate(-36.6, 25.4) scale(0.8)">
         <g id="battIconWrap">
@@ -758,10 +760,8 @@ class KFlowCard extends HTMLElement {
       <g id="pvFlowGroup"></g>
 
       ${battGhostPath}
-      ${gwGhostPath}
 
       ${battFlowPaths}
-      ${gwFlowPaths}
 
       <!-- Battery current/power placed above/below flow bar -->
       ${showBatt1 ? battText : ''}
@@ -778,6 +778,7 @@ class KFlowCard extends HTMLElement {
 
       <g id="homeIconImg" transform="translate(179,${HOME_ICON_Y})" style="opacity:1"><image href="${iconPath}/home-icon.png" x="0" y="0" width="160" height="160" preserveAspectRatio="xMidYMid meet"/></g>
 
+      ${gwHomeWireLayer}
       ${gridWireLayer}
 
       <text id="fcLoadVal" x="174" y="${HOME_LOAD_LABEL_Y}" text-anchor="end" font-size="13" font-weight="700" fill="#F7F6D3">-- W</text>
@@ -874,6 +875,7 @@ class KFlowCard extends HTMLElement {
     const flowDur = (w) => Math.max(0.5, 3.0 - (Math.min(Math.abs(w), 8000) / 8000) * 2.5).toFixed(2) + 's';
     const setFlow = (id, show, watts, durStr, color) => {
       const el = getEl(id); if (!el) return;
+      el.style.removeProperty('display');
       el.setAttribute('opacity', show ? '1' : '0');
       el.setAttribute('visibility', show ? 'visible' : 'hidden');
       if (!show) return;
@@ -933,6 +935,11 @@ class KFlowCard extends HTMLElement {
     const gwHomeDur = flowDur(gwHomeW);
     setFlow('flowGwHomeIn', showGwHome && !gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
     setFlow('flowGwHomeOut', showGwHome && gwHomeOut, gwHomeW, gwHomeDur, gwHomeColor);
+    const gwHomeWireBase = getEl('gwHomeWireBase');
+    if (gwHomeWireBase) {
+      gwHomeWireBase.setAttribute('opacity', showGwHome ? '0.35' : '0.75');
+      gwHomeWireBase.setAttribute('stroke', showGwHome ? gwHomeColor : '#8b949e');
+    }
 
     // Icon glows
     const battIconWrap = getEl('battIconWrap');
