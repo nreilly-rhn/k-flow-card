@@ -475,6 +475,7 @@ class KFlowCardEditor extends HTMLElement {
       picker('battery_soc',      'Battery SOC'),
       picker('battery_power',    'Battery Power'),
       picker('battery_capacity',    'Battery Capacity'),
+      picker('battery_remaining',    'Battery Remaining'),
       // picker('battery_current',  'Battery Current'), # This is calculated from power & voltage
       pickerMaybeDisabled('battery_voltage',  'Battery Voltage',    labelsEnabled),
       pickerMaybeDisabled('batt_dis',         'Discharge Today',    labelsEnabled),
