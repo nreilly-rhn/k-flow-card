@@ -48,13 +48,14 @@ k-flow-card visualises the live power flow between your solar panels, battery, g
    - `flow.svg`
    - `home-icon.png`
    - `grid-icon.png`
-   - `fronius-inverter-icon.png`
-   - `powerwall-gateway-icon.png` (same asset; legacy filename)
+   - `tesla-logo-icon.png`
+   - `fronius-inverter-icon.png` (optional legacy hub icon)
+   - `powerwall-gateway-icon.png` (optional legacy hub icon)
 2. Create the folder `/config/www/community/k-flow-card/` if it does not already exist, and copy all files into it:
 
    ```bash
    mkdir -p /config/www/community/k-flow-card
-   cp k-flow-card.js flow.svg home-icon.png grid-icon.png fronius-inverter-icon.png powerwall-gateway-icon.png \
+   cp k-flow-card.js flow.svg home-icon.png grid-icon.png tesla-logo-icon.png \
       /config/www/community/k-flow-card/
    ```
 
@@ -96,8 +97,9 @@ The card uses PNG icons automatically served from the install folder:
 |---|---|
 | `home-icon.png` | House / load icon |
 | `grid-icon.png` | Grid / utility icon |
-| `fronius-inverter-icon.png` | Gateway / inverter hub (Fronius GEN24-style; PV→gateway←grid, gateway→home) |
-| `powerwall-gateway-icon.png` | Same image (legacy filename for older installs) |
+| `tesla-logo-icon.png` | Gateway / hub icon (Tesla logo; PV→gateway←grid, gateway→home) |
+| `fronius-inverter-icon.png` | Optional legacy hub icon |
+| `powerwall-gateway-icon.png` | Optional legacy hub icon |
 
 Icons are served from `/local/community/k-flow-card/` for both HACS and manual installs. As long as the files are in the correct folder no extra configuration is required.
 
@@ -224,7 +226,7 @@ Icon PNGs and `flow.svg` must be in `/config/www/community/k-flow-card/`:
 
 ```bash
 ls /config/www/community/k-flow-card/
-# Expected: k-flow-card.js  flow.svg  home-icon.png  grid-icon.png  fronius-inverter-icon.png  powerwall-gateway-icon.png
+# Expected: k-flow-card.js  flow.svg  home-icon.png  grid-icon.png  tesla-logo-icon.png
 ```
 
 - **HACS:** If icons are missing after install, go to HACS → k-flow-card → **Redownload**.

@@ -656,8 +656,11 @@ class KFlowCard extends HTMLElement {
 
     // Battery current/power placed OUTSIDE the transformed group, above/below the flow bar (center y=175)
     const battText = `
-      <text id="battPwrFlow" x="75" y="165" font-size="10" font-weight="600" fill="#cde">-- W</text>
-      <text id="battCurrFlow" x="75" y="196" font-size="10" font-weight="600" fill="#fff">-- A</text>
+      <text id="battPwrFlow" x="75" y="166" font-size="13" font-weight="700" fill="#cde">-- W</text>
+      <text id="battCurrFlow" x="75" y="198" font-size="13" font-weight="700" fill="#fff">-- A</text>
+      <text id="bEnduranceSvg" x="40" y="268" text-anchor="middle" font-size="12" font-weight="600" fill="#8b949e">--</text>
+      <text id="bEnduEtaLabel" x="40" y="284" text-anchor="middle" font-size="10" fill="#8b949e" letter-spacing="0.5">ENDU</text>
+      <text id="bEnduEta" x="40" y="298" text-anchor="middle" font-size="11" font-weight="700" fill="#8b949e">--</text>
     `;
 
     const batteryTip = `<rect x="75" y="126" width="18" height="4" rx="2" fill="url(#battCapGrad)"/>`;
@@ -693,17 +696,17 @@ class KFlowCard extends HTMLElement {
             <rect id="battFillBar" x="53" y="263" width="62" height="0" rx="0" fill="#3fb950" clip-path="url(#battBodyClip)"/>
             <rect id="battFillHL" x="53" y="263" width="62" height="0" rx="0" fill="url(#battFillHighlight)" clip-path="url(#battBodyClip)" style="pointer-events:none"/>
             <g id="battBoltGroup" opacity="0"><polygon points="86,176 74,199 82,199 77,223 93,195 85,195 97,176" fill="#ffa01a" stroke="rgba(100,150,255,.5)" stroke-width="0.8" filter="url(#battGlowBolt)"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.0s" repeatCount="indefinite"/></polygon></g>
-            <text id="fcBattVal" x="84" y="211" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">--%</text>
-            <text id="battVoltageFlow" x="84" y="285" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">-- V</text>
+            <text id="fcBattVal" x="84" y="211" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">--%</text>
+            <text id="battVoltageFlow" x="84" y="285" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">-- V</text>
         </g>
       </g>`
     );
 
     this.shadowRoot.innerHTML = `<style>
       :host{display:block} @keyframes svgPulseOrange{0%,100%{filter:drop-shadow(0 0 5px #f39c4b)}50%{filter:drop-shadow(0 0 8px #f39c4bff)}}
-      .st{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:7px 9px}
-      .st .l{font-size:.48rem;color:#8b949e;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
-      .st .v{font-size:.8rem;font-weight:600;color:#c9d1d9}
+      .st{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:9px 11px}
+      .st .l{font-size:.62rem;color:#8b949e;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+      .st .v{font-size:.98rem;font-weight:600;color:#c9d1d9}
       .dv{height:1px;background:#21262d;margin:8px 0}
       .ct{font-size:.56rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8b949e;margin-bottom:10px;display:flex;align-items:center;gap:7px}
       .ct::after{content:'';flex:1;height:1px;background:#21262d}
@@ -773,7 +776,7 @@ class KFlowCard extends HTMLElement {
 
       ${battIconSection}
 
-      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/fronius-inverter-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/tesla-logo-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
 
       <g id="gridIconImg" transform="translate(${GRID_ICON_X},${GRID_ICON_Y})" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="${GRID_ICON_W}" height="${GRID_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
