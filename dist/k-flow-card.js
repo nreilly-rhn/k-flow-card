@@ -979,6 +979,7 @@ class KFlowCard extends HTMLElement {
     setText('bBattDis', battDis1 + ' kWh');
 
     // Endurance
+    /*
     let endText = '--', endColor = '#8b949e';
     const remWh = (remCap1 / fullAh) * fullWh;
     if (battPwr1 < -10) {
@@ -997,7 +998,7 @@ class KFlowCard extends HTMLElement {
 
     // bEnduEta — same logic, shown below the battery icon in SVG
     // Label switches between "ENDU" (discharging) and "ETA" (charging)
-    /*
+    
     {
       let enduEtaText = '--', enduEtaColor = '#8b949e', enduEtaLabelText = 'ENDU';
       const remWhB = (remCap1 / fullAh) * fullWh;
