@@ -776,7 +776,10 @@ class KFlowCard extends HTMLElement {
 
       ${battIconSection}
 
-      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1"><image href="${iconPath}/tesla-logo-icon.png" x="0" y="0" width="70" height="70" preserveAspectRatio="xMidYMid meet"/></g>
+      <g id="gatewayIconImg" transform="translate(${GW_X - 35},${GW_Y - 35})" style="opacity:1">
+        <rect x="0" y="0" width="70" height="70" rx="10" fill="#2d333b" stroke="#484f58" stroke-width="1.5"/>
+        <image href="${iconPath}/tesla-logo-icon.png" x="6" y="6" width="58" height="58" preserveAspectRatio="xMidYMid meet"/>
+      </g>
 
       <g id="gridIconImg" transform="translate(${GRID_ICON_X},${GRID_ICON_Y})" style="opacity:1"><image href="${iconPath}/grid-icon.png" x="0" y="0" width="${GRID_ICON_W}" height="${GRID_ICON_W}" preserveAspectRatio="xMidYMid meet"/></g>
 
