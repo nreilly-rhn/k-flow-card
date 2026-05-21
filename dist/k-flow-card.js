@@ -997,6 +997,7 @@ class KFlowCard extends HTMLElement {
 
     // bEnduEta — same logic, shown below the battery icon in SVG
     // Label switches between "ENDU" (discharging) and "ETA" (charging)
+    /*
     {
       let enduEtaText = '--', enduEtaColor = '#8b949e', enduEtaLabelText = 'ENDU';
       const remWhB = (remCap1 / fullAh) * fullWh;
@@ -1016,7 +1017,7 @@ class KFlowCard extends HTMLElement {
       if (_enduLbl) { _enduLbl.textContent = this.config.label_endu_eta || enduEtaLabelText; _enduLbl.setAttribute('fill', enduEtaColor); }
       const _enduVal = getEl('bEnduEta');
       if (_enduVal) { _enduVal.textContent = enduEtaText; _enduVal.setAttribute('fill', enduEtaColor); }
-    }
+    } */
 
     const pwrBar = getEl('pwrBar');
     if (pwrBar) {
